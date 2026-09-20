@@ -49,3 +49,71 @@
   background:linear-gradient(180deg,transparent,rgba(0,0,0,.72));
   border-radius:0 0 28px 28px;
 }
+
+/* Session 3 professional slider: swipe + dots, no arrows. */
+.v18s3-public-gallery-grid.v18s3-moments-carousel{
+  display:block!important;
+  position:relative;
+  max-width:960px;
+  overflow:hidden;
+  border-radius:28px;
+  touch-action:pan-y;
+  overscroll-behavior-x:contain;
+}
+.v18s3-carousel-track{
+  display:flex;
+  width:100%;
+  transform:translate3d(0,0,0);
+  transition:transform .68s cubic-bezier(.22,.61,.36,1);
+  will-change:transform;
+}
+.v18s3-moments-carousel .v18s3-carousel-slide{
+  display:block!important;
+  flex:0 0 100%;
+  width:100%;
+  margin:0;
+  opacity:1!important;
+  border-radius:28px;
+  overflow:hidden;
+  background:transparent!important;
+  box-shadow:none;
+}
+.v18s3-moments-carousel .v18s3-carousel-slide img{
+  display:block;
+  width:100%;
+  height:auto;
+  margin:0;
+  aspect-ratio:16/9;
+  max-height:620px;
+  object-fit:cover;
+  border-radius:28px;
+  vertical-align:top;
+}
+.v18s3-carousel-controls.v18s3-dots-only{
+  max-width:960px;
+  margin:14px auto 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.v18s3-carousel-controls.v18s3-dots-only.single{display:none}
+.v18s3-carousel-dots{display:flex;align-items:center;justify-content:center;gap:8px}
+.v18s3-carousel-dot{
+  width:8px;
+  height:8px;
+  min-width:8px;
+  border-radius:999px;
+  border:0;
+  padding:0;
+  background:#c9c4b8;
+  transition:width .28s ease,background .28s ease,transform .28s ease;
+  cursor:pointer;
+}
+.v18s3-carousel-dot.active{
+  width:28px;
+  background:#111;
+  transform:scaleY(1.08);
+}
+@media(max-width:560px){
+  .v18s3-moments-carousel .v18s3-carousel-slide img{aspect-ratio:4/3}
+}
