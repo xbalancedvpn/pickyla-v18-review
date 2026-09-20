@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PICKYLA v18 • Session 1 Review</title>
+<link rel="icon" href="pickyla-emblem-final.png">
+<style>
+:root{--bg:#090909;--card:#111;--card2:#171717;--line:#2b2b2b;--text:#fff;--muted:#9c9c9c;--accent:#f5c400;--ok:#7bd99f;--danger:#ff7a7a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1a1604 0,#090909 28%,#050505 100%);color:var(--text);font-family:Inter,Manrope,Arial,sans-serif}
+button,input,select,textarea{font:inherit}.wrap{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}.brand img{width:48px;height:48px;object-fit:contain}.eyebrow{color:var(--accent);font-size:.74rem;font-weight:900;letter-spacing:.12em}.top h1{margin:4px 0 0;font-size:clamp(1.35rem,3vw,2rem)}
+.badge{padding:8px 12px;border:1px solid rgba(245,196,0,.35);background:rgba(245,196,0,.08);border-radius:999px;color:var(--accent);font-weight:800;font-size:.8rem}
+.notice{padding:14px 16px;border:1px solid rgba(245,196,0,.28);background:rgba(245,196,0,.06);border-radius:14px;color:#ddd;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:18px}.panel{background:rgba(17,17,17,.94);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 18px 45px rgba(0,0,0,.25)}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.head h2,.head h3{margin:3px 0 0}.muted{color:var(--muted);font-size:.9rem}
+.primary,.secondary,.ghost{border-radius:10px;padding:10px 13px;cursor:pointer;font-weight:800}.primary{background:var(--accent);border:0;color:#111}.secondary{background:#1c1c1c;border:1px solid #3b3b3b;color:#fff}.ghost{background:transparent;border:1px solid #333;color:#ccc}
+.search{width:100%;background:#0b0b0b;color:#fff;border:1px solid #333;border-radius:10px;padding:11px 12px;margin-bottom:12px}
+.player-list{display:grid;gap:9px;max-height:620px;overflow:auto}.player-card{padding:13px;border:1px solid #292929;background:#0d0d0d;border-radius:13px;cursor:pointer}.player-card:hover,.player-card.active{border-color:rgba(245,196,0,.55);background:#151205}.player-card strong{display:block}.player-card small{color:#999}
+.empty{padding:24px;text-align:center;color:#777;border:1px dashed #333;border-radius:12px}
+.hero{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.hero h2{margin:4px 0}.actions{display:flex;flex-wrap:wrap;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.stat{padding:12px;background:#0d0d0d;border:1px solid #292929;border-radius:12px}.stat span{display:block;color:#8e8e8e;font-size:.75rem;text-transform:uppercase}.stat strong{font-size:1.15rem}
+.snapshot{padding:16px;border:1px solid rgba(245,196,0,.2);border-radius:15px;background:linear-gradient(145deg,rgba(245,196,0,.06),rgba(255,255,255,.02))}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.info{padding:10px;background:rgba(255,255,255,.03);border:1px solid #292929;border-radius:10px}.info span{display:block;color:#888;font-size:.72rem;text-transform:uppercase}.info strong,.info p{margin:4px 0 0;word-break:break-word}
+.notes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px}.timeline{display:grid;gap:9px;margin-top:15px}.event{padding:11px 12px;border-left:3px solid var(--accent);background:#0d0d0d;border-radius:8px}.event small{color:#8f8f8f}
+dialog{width:min(760px,94vw);border:1px solid #343434;border-radius:18px;background:#111;color:#fff;padding:0}.form{padding:18px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{display:grid;gap:6px;color:#bbb;font-size:.86rem;margin-bottom:10px}.form input,.form select,.form textarea{width:100%;background:#090909;color:#fff;border:1px solid #333;border-radius:9px;padding:10px}.full{grid-column:1/-1}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.close{background:transparent;color:#aaa;border:0;font-size:1.4rem;cursor:pointer}
+.warn{padding:12px;border-radius:10px;background:rgba(255,180,60,.08);border:1px solid rgba(255,180,60,.3);color:#ffd08b;margin:10px 0}.ok{color:var(--ok)}.danger{color:var(--danger)}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.player-list{max-height:300px}.stats{grid-template-columns:1fr 1fr}.profile-grid,.notes-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.wrap{padding:14px}.top{align-items:flex-start}.badge{display:none}.stats,.profile-grid,.notes-grid,.form-grid{grid-template-columns:1fr}.hero{display:block}.actions{margin-top:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand"><div style="width:48px;height:48px;border-radius:14px;background:#f5c400;color:#090909;display:grid;place-items:center;font-weight:1000;letter-spacing:-.06em">PK</div><div><span class="eyebrow">PICKYLA V18 • SESSION 1</span><h1>Professional Player Management</h1></div></div><span class="badge">SAFE REVIEW MODE</span></div>
+  <div class="notice"><strong>This is your Session 1 review sandbox.</strong> It mirrors the new Player Management experience but stores only demo data in this browser. It cannot touch the live PICKYLA site or live Supabase.</div>
+  <div class="grid">
+    <section class="panel">
+      <div class="head"><div><span class="eyebrow">PLAYER MANAGEMENT</span><h2>Players</h2><div class="muted" id="countLabel"></div></div><button class="primary" id="addBtn">+ Add Player</button></div>
+      <input class="search" id="search" placeholder="Search player name, contact, email, Messenger">
+      <div class="player-list" id="playerList"></div>
+    </section>
+    <section class="panel" id="detailPanel">
+      <div id="emptyDetail" class="empty">Select a player to review the new profile layout.</div>
+      <div id="detail" hidden>
+        <div class="hero"><div><span class="eyebrow">PLAYER PROFILE</span><h2 id="dName"></h2><div class="muted" id="dMeta"></div></div><div class="actions"><button class="secondary" id="bookBtn">Book Session</button><button class="secondary" id="editBtn">Edit Player</button><button class="secondary">Progress Card</button><button class="primary">Enroll in Program</button></div></div>
+        <div class="stats" id="stats"></div>
+        <div class="snapshot">
+          <div class="head"><div><span class="eyebrow">PLAYER OVERVIEW</span><h3>Coaching profile</h3></div><span class="badge" id="statusBadge">ACTIVE</span></div>
+          <div class="profile-grid" id="profileGrid"></div>
+          <div class="notes-grid" id="notesGrid"></div>
+        </div>
+        <div class="timeline"><div><span class="eyebrow">SESSION HISTORY</span><h3>Bookings & outcomes</h3></div><div id="timeline"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<dialog id="playerDialog"><form class="form" id="playerForm">
+  <div class="head"><div><span class="eyebrow">PLAYER PROFILE</span><h2 id="formTitle">Add player</h2><div class="muted">Professional player details for coaching preparation.</div></div><button class="close" type="button" id="closeDialog">×</button></div>
+  <input type="hidden" id="playerId">
+  <div class="form-grid">
+    <label>First name<input id="first" required></label><label>Last name<input id="last" required></label>
+    <label>Contact / Mobile<input id="contact"></label><label>Email<input id="email" type="email"></label>
+    <label>Messenger / Facebook<input id="messenger"></label><label>Birthday<input id="birthday" type="date"></label>
+    <label>Player level<select id="level"><option value="">Not set</option><option>Beginner</option><option>Beginner+</option><option>Intermediate</option><option>Intermediate+</option><option>Advanced</option><option>Competitive</option></select></label>
+    <label>Preferred hand<select id="hand"><option value="">Not set</option><option>Right-handed</option><option>Left-handed</option><option>Ambidextrous</option></select></label>
+    <label class="full">Playing experience<input id="experience" placeholder="e.g. 6 months recreational"></label>
+    <label class="full">Primary coaching goal<input id="goal" placeholder="e.g. Improve doubles positioning and consistency"></label>
+    <label class="full">Coach notes<textarea id="notes" rows="3" placeholder="Private coaching notes"></textarea></label>
+  </div>
+  <div id="duplicateWarn" class="warn" hidden></div>
+  <div class="form-actions"><button type="button" class="ghost" id="resetDemo">Reset Demo Data</button><button type="button" class="secondary" id="cancelDialog">Cancel</button><button class="primary" type="submit">Save Player</button></div>
+</form></dialog>
+
+<script>
+const KEY='pickyla-v18-session1-review';
+const seed=[
+{id:'p1',first:'Maria',last:'Santos',contact:'0917 555 0101',email:'maria@example.com',messenger:'Maria Santos',birthday:'1998-06-15',level:'Intermediate',hand:'Right-handed',experience:'1 year recreational + local doubles games',goal:'Improve transition-zone decision making and doubles positioning',notes:'Strong forehand drive. Next focus: backhand reset and kitchen patience.',joined:'2026-08-22',sessions:12,completed:9,upcoming:2,programs:1,history:[
+{date:'2026-09-18',title:'Solo Coaching',meta:'Completed • 1 hour',note:'Improved third-shot consistency.'},
+{date:'2026-09-12',title:'Duo Coaching',meta:'Completed • Partner: Ana Cruz',note:'Focused on communication and court coverage.'},
+{date:'2026-09-06',title:'Booking confirmed',meta:'Upcoming program preparation',note:''}]},
+{id:'p2',first:'Ana',last:'Cruz',contact:'',email:'',messenger:'Ana C.',birthday:'',level:'Beginner+',hand:'Left-handed',experience:'4 months recreational',goal:'Build reliable serve, return and dinking fundamentals',notes:'Learns quickly; prefers visual demonstrations.',joined:'2026-09-03',sessions:5,completed:3,upcoming:1,programs:0,history:[
+{date:'2026-09-12',title:'Duo Coaching',meta:'Completed • Partner: Maria Santos',note:'Good improvement on serve depth.'},
+{date:'2026-09-08',title:'Solo Coaching',meta:'Completed • 1 hour',note:'Introduced basic kitchen positioning.'}]}
+];
+let players=load(),selected=players[0]?.id||null;
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(seed)}catch{return structuredClone(seed)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(players))}
+function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
+function full(p){return (p.first+' '+p.last).trim()}
+function renderList(){const q=document.getElementById('search').value.trim().toLowerCase();const rows=players.filter(p=>!q||[full(p),p.contact,p.email,p.messenger,p.level,p.goal].some(v=>String(v||'').toLowerCase().includes(q)));countLabel.textContent=rows.length+' player'+(rows.length===1?'':'s');playerList.innerHTML=rows.length?rows.map(p=>`<div class="player-card ${p.id===selected?'active':''}" data-id="${p.id}"><strong>${esc(full(p))}</strong><small>${esc(p.level||'Level not set')} • ${esc(p.contact||p.messenger||p.email||'No contact saved')}</small></div>`).join(''):'<div class="empty">No matching player profiles.</div>';document.querySelectorAll('.player-card').forEach(x=>x.onclick=()=>{selected=x.dataset.id;renderList();renderDetail()})}
+function renderDetail(){const p=players.find(x=>x.id===selected);emptyDetail.hidden=!!p;detail.hidden=!p;if(!p)return;dName.textContent=full(p);dMeta.textContent=[p.contact,p.email,p.messenger].filter(Boolean).join(' • ')||'No contact saved';stats.innerHTML=[['Total Sessions',p.sessions||0],['Completed',p.completed||0],['Upcoming',p.upcoming||0],['Active Programs',p.programs||0]].map(([a,b])=>`<div class="stat"><span>${a}</span><strong>${b}</strong></div>`).join('');profileGrid.innerHTML=[
+['Level',p.level||'Not set'],['Preferred hand',p.hand||'Not set'],['Joined',p.joined||new Date().toISOString().slice(0,10)],['Contact',p.contact||'Not saved'],['Email',p.email||'Not saved'],['Messenger',p.messenger||'Not saved']
+].map(([a,b])=>`<div class="info"><span>${a}</span><strong>${esc(b)}</strong></div>`).join('');notesGrid.innerHTML=[['Playing experience',p.experience||'Not set'],['Primary goal',p.goal||'Not set'],['Coach notes',p.notes||'No notes yet']].map(([a,b])=>`<div class="info"><span>${a}</span><p>${esc(b)}</p></div>`).join('');timeline.innerHTML=(p.history||[]).length?(p.history||[]).map(h=>`<div class="event"><strong>${esc(h.date)} • ${esc(h.title)}</strong><small>${esc(h.meta)}</small>${h.note?`<p>${esc(h.note)}</p>`:''}</div>`).join(''):'<div class="empty">No session history yet.</div>'}
+function openForm(p=null){duplicateWarn.hidden=true;playerForm.reset();playerId.value=p?.id||'';formTitle.textContent=p?'Edit player':'Add player';if(p){for(const id of ['first','last','contact','email','messenger','birthday','level','hand','experience','goal','notes'])document.getElementById(id).value=p[id]||''}playerDialog.showModal()}
+addBtn.onclick=()=>openForm();editBtn.onclick=()=>openForm(players.find(x=>x.id===selected));closeDialog.onclick=cancelDialog.onclick=()=>playerDialog.close();search.oninput=renderList;
+bookBtn.onclick=()=>alert('Session 1 quick action works: this player would pre-fill the existing PICKYLA booking form. The live booking engine itself is intentionally unchanged.');
+playerForm.onsubmit=e=>{e.preventDefault();const data={id:playerId.value||('p'+Date.now()),first:first.value.trim(),last:last.value.trim(),contact:contact.value.trim(),email:email.value.trim(),messenger:messenger.value.trim(),birthday:birthday.value,level:level.value,hand:hand.value,experience:experience.value.trim(),goal:goal.value.trim(),notes:notes.value.trim(),joined:new Date().toISOString().slice(0,10),sessions:0,completed:0,upcoming:0,programs:0,history:[]};const match=players.find(p=>p.id!==data.id&&((full(p).toLowerCase()===full(data).toLowerCase()&&p.contact&&data.contact&&p.contact.toLowerCase()===data.contact.toLowerCase())||(p.email&&data.email&&p.email.toLowerCase()===data.email.toLowerCase())||(p.messenger&&data.messenger&&p.messenger.toLowerCase()===data.messenger.toLowerCase())||full(p).toLowerCase()===full(data).toLowerCase()));if(match){duplicateWarn.hidden=false;duplicateWarn.innerHTML='Possible existing player found: <strong>'+esc(full(match))+'</strong>. This demonstrates the new duplicate-protection warning. Change the details or edit the existing player.';return}const i=players.findIndex(p=>p.id===data.id);if(i>=0)data={...players[i],...data};if(i>=0)players[i]=data;else players.unshift(data);selected=data.id;save();playerDialog.close();renderList();renderDetail()}
+resetDemo.onclick=()=>{localStorage.removeItem(KEY);players=structuredClone(seed);selected=players[0].id;playerDialog.close();renderList();renderDetail()}
+renderList();renderDetail();
+</script>
+</body></html>
