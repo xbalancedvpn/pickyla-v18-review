@@ -236,32 +236,77 @@
 
     grid.dataset.v18CarouselReady='1';
     grid.classList.add('v18s3-moments-carousel');
-    slides.forEach((slide,i)=>{slide.classList.add('v18s3-carousel-slide');slide.classList.toggle('active',i===0);slide.setAttribute('aria-hidden',i===0?'false':'true');});
+
+    const track=document.createElement('div');
+    track.className='v18s3-carousel-track';
+    slides.forEach((slide,i)=>{
+      slide.classList.add('v18s3-carousel-slide');
+      slide.classList.toggle('active',i===0);
+      slide.setAttribute('aria-hidden',i===0?'false':'true');
+      track.appendChild(slide);
+    });
+    grid.appendChild(track);
 
     let index=0;
-    const controls=document.createElement('div');controls.className='v18s3-carousel-controls';
-    controls.innerHTML=`<button type="button" class="v18s3-carousel-prev" aria-label="Previous PICKYLA moment">‹</button><div class="v18s3-carousel-dots"></div><button type="button" class="v18s3-carousel-next" aria-label="Next PICKYLA moment">›</button>`;
+    const controls=document.createElement('div');
+    controls.className='v18s3-carousel-controls v18s3-dots-only';
+    controls.innerHTML='<div class="v18s3-carousel-dots" aria-label="PICKYLA Moments"></div>';
     grid.after(controls);
     const dots=controls.querySelector('.v18s3-carousel-dots');
-    slides.forEach((_,i)=>{const d=document.createElement('button');d.type='button';d.className='v18s3-carousel-dot';d.setAttribute('aria-label',`Show photo ${i+1}`);d.classList.toggle('active',i===0);d.onclick=()=>{show(i);restart();};dots.appendChild(d);});
+
+    slides.forEach((_,i)=>{
+      const d=document.createElement('button');
+      d.type='button';
+      d.className='v18s3-carousel-dot';
+      d.setAttribute('aria-label',`Show photo ${i+1}`);
+      d.classList.toggle('active',i===0);
+      d.onclick=()=>{show(i);restart();};
+      dots.appendChild(d);
+    });
 
     function show(next){
       if(!slides.length)return;
       index=(next+slides.length)%slides.length;
-      slides.forEach((s,i)=>{const active=i===index;s.classList.toggle('active',active);s.setAttribute('aria-hidden',active?'false':'true');});
+      track.style.transform=`translate3d(-${index*100}%,0,0)`;
+      slides.forEach((s,i)=>{
+        const active=i===index;
+        s.classList.toggle('active',active);
+        s.setAttribute('aria-hidden',active?'false':'true');
+      });
       [...dots.children].forEach((d,i)=>d.classList.toggle('active',i===index));
-      // Intentionally no focus(), scrollIntoView(), or scrollLeft changes:
-      // slide transitions never move the page.
+      // No focus(), scrollIntoView(), scrollLeft, or page scroll changes.
     }
-    function stop(){if(carouselTimer){clearInterval(carouselTimer);carouselTimer=null;}}
-    function start(){stop();if(slides.length>1&&!document.hidden)carouselTimer=setInterval(()=>show(index+1),10000);}
+
+    function stop(){
+      if(carouselTimer){clearInterval(carouselTimer);carouselTimer=null;}
+    }
+    function start(){
+      stop();
+      if(slides.length>1&&!document.hidden)carouselTimer=setInterval(()=>show(index+1),10000);
+    }
     function restart(){start();}
 
-    controls.querySelector('.v18s3-carousel-prev').onclick=()=>{show(index-1);restart();};
-    controls.querySelector('.v18s3-carousel-next').onclick=()=>{show(index+1);restart();};
-    document.addEventListener('visibilitychange',()=>document.hidden?stop():start());
+    // Mobile swipe: horizontal gesture changes photo while vertical scrolling remains native.
+    let startX=null,startY=null,pointerId=null;
+    grid.addEventListener('pointerdown',e=>{
+      if(slides.length<2)return;
+      pointerId=e.pointerId;
+      startX=e.clientX;
+      startY=e.clientY;
+    });
+    grid.addEventListener('pointerup',e=>{
+      if(pointerId!==e.pointerId||startX===null||startY===null)return;
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      pointerId=null;startX=null;startY=null;
+      if(Math.abs(dx)<45||Math.abs(dx)<=Math.abs(dy))return;
+      show(index+(dx<0?1:-1));
+      restart();
+    });
+    grid.addEventListener('pointercancel',()=>{pointerId=null;startX=null;startY=null;});
 
+    document.addEventListener('visibilitychange',()=>document.hidden?stop():start());
     if(slides.length<2)controls.classList.add('single');
+    show(0);
     start();
     window.pickylaV18MomentsCarouselReady=true;
     return true;
