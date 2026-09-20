@@ -10,13 +10,14 @@
 <link rel="stylesheet" href="admin-v18-session1.css?v=18s1"><link rel="stylesheet" href="admin-v18-login.css?v=18login"><link rel="stylesheet" href="admin-v18-session2.css?v=18s2"><link rel="stylesheet" href="admin-v18-session3.css?v=18s3"></head><body>
 <div id="toast" class="toast"></div>
 <section id="loginView" class="auth-page">
+  <div class="pickyla-login-env">STAGING • PICKYLA v18</div>
   <div class="pickyla-login-shell">
     <div class="pickyla-login-logo-wrap">
       <img class="pickyla-login-logo" src="pickyla-logo-final.png" alt="PICKYLA">
       <p class="pickyla-login-tagline">Play • Learn • Improve</p>
     </div>
     <div class="auth-card pickyla-login-card">
-      <span class="eyebrow">COACH ADMIN</span>
+      <span class="eyebrow">COACH ADMIN • STAGING</span>
       <h1>Welcome to PICKYLA Admin</h1>
       <p>Manage bookings, players, schedules, and coaching sessions in one place.</p>
       <form id="loginForm">
@@ -25,6 +26,8 @@
         <button class="primary" type="submit">Sign In →</button>
       </form>
       <small id="loginError"></small>
+      <button id="stagingSignupBtn" class="text-btn" type="button">Create staging admin account</button>
+      <small id="signupMessage"></small>
       <a class="auth-public-link" href="index.html">← Back to Public Site</a>
     </div>
     <div class="pickyla-login-features">
