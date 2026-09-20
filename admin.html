@@ -80,14 +80,19 @@
   <div class="weekly-export-head">
     <div class="weekly-export-title">
       <img src="pickyla-emblem-final.png" alt="Pickyla emblem">
-      <div><span class="eyebrow">WEEKLY SHARE CARD</span><h2>Generate schedule image</h2><p>Create a Sunday–Saturday PNG from the live schedule, ready to send in Messenger.</p></div>
+      <div><span class="eyebrow">WEEKLY SHARE CARD</span><h2>Generate schedule image</h2><p>Create a Monday–Sunday PNG from the live schedule, ready to save or share.</p></div>
     </div>
     <div class="weekly-export-controls">
-      <label>Week containing<input id="weeklyWeekDate" type="date"></label>
-      <button id="generateWeeklyBtn" class="primary" type="button">Generate Weekly Image</button>
+      <div id="v18s2WeekNav" class="v18s2-week-nav">
+        <button type="button" data-week-offset="-1">Past Week</button>
+        <button type="button" data-week-offset="0">This Week</button>
+        <button type="button" data-week-offset="1">Next Week</button>
+      </div>
+      <label class="v18s2-week-date">Custom week<input id="weeklyWeekDate" type="date"></label>
+      <button id="generateWeeklyBtn" class="primary" type="button">Generate Weekly Card</button>
     </div>
   </div>
-  <div class="weekly-export-meta"><strong id="weeklyRangeLabel">Current week</strong><span>Green = Available • Red = Booked • Gray = Blocked • Light gray = Past</span></div>
+  <div class="weekly-export-meta"><strong id="weeklyRangeLabel">Monday–Sunday • Current week</strong><span>Green = Available • Red = Booked • Gray = Blocked • Light gray = Past • Player names hidden</span></div>
   <div id="weeklyPreviewWrap" class="weekly-preview-wrap hidden">
     <img id="weeklyPreview" alt="Generated Pickyla weekly schedule preview">
     <div class="weekly-preview-actions"><button id="downloadWeeklyBtn" class="secondary" type="button">Download PNG</button></div>
@@ -230,4 +235,4 @@
   <div class="editor-actions"><button id="cancelProgressCard" type="button" class="soft-danger">Close</button><button id="downloadProgressCard" type="button" class="primary">Download PNG</button></div>
 </div></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=17e"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v18-session1.js?v=18s1"></script><script src="admin-v18-session2.js?v=18s2"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=17e"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v18-session1.js?v=18s1"></script><script src="admin-v18-session2.js?v=18s2b"></script><script src="admin-v18-weeknav.js?v=18week1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
