@@ -1,0 +1,20 @@
+/* PICKYLA v18 Session 3 UX */
+.v18s3-hour-help{display:flex;gap:8px;align-items:flex-start;margin:8px 0 10px;padding:10px 12px;border:1px solid #e5dfd2;border-radius:12px;background:#faf8f1}
+.v18s3-hour-help strong{font-size:10px;white-space:nowrap;color:#111}.v18s3-hour-help span{font-size:9px;line-height:1.45;color:#777}
+.slot.v18s3-hour-slot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px}
+.slot.v18s3-hour-slot strong{font-size:11px}.slot.v18s3-hour-slot small{font-size:8px;font-weight:800;opacity:.72;text-transform:uppercase;letter-spacing:.4px}
+.slot.v18s3-hour-slot.in-range{background:#111!important;color:#f5c400!important;border-color:#111!important;box-shadow:0 7px 16px rgba(0,0,0,.13)}
+.slot.v18s3-hour-slot.in-range small{color:#fff;opacity:.9}.slot.v18s3-hour-slot.v18s3-range-start:before{content:'START';position:absolute;top:3px;left:5px;font-size:6px;font-weight:900;letter-spacing:.5px;color:#f5c400}
+.slot.v18s3-hour-slot.v18s3-range-end:after{content:'END';position:absolute;top:3px;right:5px;font-size:6px;font-weight:900;letter-spacing:.5px;color:#f5c400}
+.duration-summary{font-weight:800}
+
+/* Fixed carousel: visual slide changes never alter page scroll position. */
+.v18s3-public-gallery-grid.v18s3-moments-carousel{display:block!important;position:relative;max-width:960px;min-height:0}
+.v18s3-moments-carousel .v18s3-carousel-slide{display:none;margin:0;width:100%;opacity:0;transition:opacity .45s ease}
+.v18s3-moments-carousel .v18s3-carousel-slide.active{display:block;opacity:1}
+.v18s3-moments-carousel .v18s3-carousel-slide img{width:100%;aspect-ratio:16/9;max-height:620px;object-fit:cover}
+.v18s3-carousel-controls{max-width:960px;margin:12px auto 0;display:flex;align-items:center;justify-content:center;gap:12px}
+.v18s3-carousel-controls.single{display:none}.v18s3-carousel-prev,.v18s3-carousel-next{width:38px;height:38px;border-radius:50%;border:1px solid #d8d2c5;background:#111;color:#f5c400;font-size:25px;line-height:1;cursor:pointer}
+.v18s3-carousel-dots{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.v18s3-carousel-dot{width:8px;height:8px;border-radius:50%;border:0;background:#c9c4b8;padding:0;cursor:pointer}
+.v18s3-carousel-dot.active{width:22px;border-radius:999px;background:#111}
+@media(max-width:560px){.v18s3-hour-help{display:block}.v18s3-hour-help strong,.v18s3-hour-help span{display:block}.v18s3-hour-help span{margin-top:4px}.slot.v18s3-hour-slot{min-height:52px}.slot.v18s3-hour-slot strong{font-size:10px}.v18s3-moments-carousel .v18s3-carousel-slide img{aspect-ratio:4/3}}
