@@ -1,0 +1,16 @@
+.v18s3-content-hub{margin:18px 0;display:grid;gap:14px}
+.v18s3-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px;background:#111;color:#fff;border-radius:20px}
+.v18s3-head h2{margin:4px 0 6px}.v18s3-head p{margin:0;color:#aaa;font-size:12px}.v18s3-badge{background:#f5c400;color:#111;border-radius:999px;padding:7px 10px;font-size:9px;font-weight:900}
+.v18s3-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.v18s3-panel{padding:18px}.v18s3-panel h3{margin:3px 0 0}
+.v18s3-form{display:grid;gap:10px}.v18s3-form label,.v18s3-photo-editor label{display:grid;gap:6px;font-size:11px;font-weight:800;color:#444}
+.v18s3-form input,.v18s3-form textarea,.v18s3-photo-editor input,.v18s3-photo-editor textarea{width:100%;border:1px solid #dedbd2;border-radius:11px;padding:10px 11px;background:#fff;color:#111}
+.v18s3-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v18s3-toggle{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:8px!important}.v18s3-toggle input{width:auto!important}
+.v18s3-image-preview{min-height:80px;border:1px dashed #d9d4c8;border-radius:14px;background:#faf9f5;display:grid;place-items:center;padding:10px;color:#888;font-size:10px}
+.v18s3-image-preview img{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:10px}.v18s3-image-preview small{margin-top:6px}
+.v18s3-gallery-toggle{margin:4px 0 14px}.v18s3-gallery-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.v18s3-gallery-item{border:1px solid #e8e3d8;border-radius:15px;overflow:hidden;background:#fff;display:flex;flex-direction:column}.v18s3-gallery-item>img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eee}
+.v18s3-gallery-copy{padding:10px 11px;flex:1}.v18s3-gallery-copy strong,.v18s3-gallery-copy small{display:block}.v18s3-gallery-copy small{color:#888;font-size:9px;margin-top:2px}.v18s3-gallery-copy p{font-size:10px;color:#666;line-height:1.4;margin:8px 0 0}
+.v18s3-gallery-actions{display:flex;gap:5px;padding:0 10px 10px}.v18s3-gallery-actions button{flex:1;border:1px solid #ddd8cb;background:#faf8f1;border-radius:9px;padding:7px 5px;font-size:9px;font-weight:800}
+.v18s3-photo-editor{width:min(680px,94vw)}.testimonial-admin-card.v18s3-featured{box-shadow:inset 4px 0 #f5c400}.testimonial-admin-actions .feature{background:#111!important;color:#f5c400!important}
+@media(max-width:800px){.v18s3-grid{grid-template-columns:1fr}.v18s3-gallery-list{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.v18s3-head{padding:16px}.v18s3-two,.v18s3-gallery-list{grid-template-columns:1fr}.v18s3-gallery-actions button{font-size:8px}}
