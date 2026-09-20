@@ -18,3 +18,34 @@
 .v18s3-carousel-dots{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.v18s3-carousel-dot{width:8px;height:8px;border-radius:50%;border:0;background:#c9c4b8;padding:0;cursor:pointer}
 .v18s3-carousel-dot.active{width:22px;border-radius:999px;background:#111}
 @media(max-width:560px){.v18s3-hour-help{display:block}.v18s3-hour-help strong,.v18s3-hour-help span{display:block}.v18s3-hour-help span{margin-top:4px}.slot.v18s3-hour-slot{min-height:52px}.slot.v18s3-hour-slot strong{font-size:10px}.v18s3-moments-carousel .v18s3-carousel-slide img{aspect-ratio:4/3}}
+/* Session 3 gallery frame fix: no empty white caption strip; all corners stay clipped. */
+.v18s3-moments-carousel .v18s3-carousel-slide{
+  position:relative;
+  overflow:hidden;
+  border-radius:28px;
+  background:transparent!important;
+  border:0!important;
+}
+.v18s3-moments-carousel .v18s3-carousel-slide img{
+  display:block;
+  width:100%;
+  height:auto;
+  margin:0;
+  border-radius:inherit;
+  vertical-align:top;
+}
+.v18s3-moments-carousel .v18s3-carousel-slide figcaption:empty{
+  display:none!important;
+  padding:0!important;
+  margin:0!important;
+}
+.v18s3-moments-carousel .v18s3-carousel-slide figcaption:not(:empty){
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:34px 18px 16px;
+  color:#fff;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.72));
+  border-radius:0 0 28px 28px;
+}
