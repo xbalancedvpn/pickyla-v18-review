@@ -1,0 +1,21 @@
+/* PICKYLA v18 Session 2 */
+.v18s2-native-score{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}
+.v18s2-assessment-grid{display:grid!important;grid-template-columns:1fr!important;gap:14px!important;margin:14px 0}
+.v18s2-skill-group{border:1px solid #e6e0d2;border-radius:16px;background:#fbfaf6;padding:13px}
+.v18s2-skill-group-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.v18s2-skill-group-title strong{font:800 13px Manrope;color:#111}.v18s2-skill-group-title span{font-size:9px;font-weight:800;color:#8b7419;text-transform:uppercase;letter-spacing:.8px}
+.v18s2-skill-list{display:grid;gap:10px}.v18s2-rating-row{padding:10px;border:1px solid #ebe7dc;border-radius:13px;background:#fff}
+.v18s2-rating-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.v18s2-rating-head strong{font-size:12px;color:#111}.v18s2-rating-head span{font-size:9px;color:#777;font-weight:700}
+.v18s2-rating-buttons{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.v18s2-rating-buttons button{border:1px solid #ded9cd;background:#f7f5ef;color:#333;border-radius:10px;min-height:52px;padding:6px 3px;cursor:pointer}
+.v18s2-rating-buttons button b{display:block;font:900 17px Manrope}.v18s2-rating-buttons button small{display:block;font-size:7px;line-height:1.1;color:#777;margin-top:2px}
+.v18s2-rating-buttons button.active{background:#111;border-color:#111;color:#f5c400;box-shadow:0 7px 16px rgba(0,0,0,.12)}.v18s2-rating-buttons button.active small{color:#fff}
+.v18s2-note-help{display:block!important;color:#777!important;font-size:9px!important;margin:6px 0 0!important}
+#progressCardDialog .editor-actions,#confirmationCardDialog .editor-actions,.weekly-preview-actions{gap:8px!important;flex-wrap:wrap}
+#progressCardDialog .editor-actions button,#confirmationCardDialog .editor-actions button,.weekly-preview-actions button{min-width:120px}
+.v17f-progress-card-preview,.confirmation-card-preview,.weekly-preview-wrap img{box-shadow:0 14px 36px rgba(0,0,0,.14)}
+@media(max-width:560px){
+ .v18s2-skill-group{padding:10px}.v18s2-rating-buttons{gap:4px}.v18s2-rating-buttons button{min-height:49px;border-radius:9px}.v18s2-rating-buttons button b{font-size:16px}.v18s2-rating-buttons button small{font-size:6.5px}
+ #progressCardDialog .editor-actions,#confirmationCardDialog .editor-actions,.weekly-preview-actions{display:grid!important;grid-template-columns:1fr 1fr}
+ #progressCardDialog .editor-actions .soft-danger,#confirmationCardDialog .editor-actions .soft-danger{grid-column:1/-1}
+ #progressCardDialog .editor-actions button,#confirmationCardDialog .editor-actions button,.weekly-preview-actions button{width:100%;min-width:0}
+}
