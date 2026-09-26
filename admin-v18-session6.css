@@ -1,0 +1,8 @@
+/* PICKYLA v18 Session 6 */
+.admin-logo-link{display:flex;align-items:center;text-decoration:none;border-radius:10px}
+.admin-logo-link:focus-visible{outline:3px solid #f5c400;outline-offset:3px}
+.admin-logo-link .admin-logo{display:block}
+.v18s6-show-row{display:flex;justify-content:center;margin-top:12px}
+.v18s6-show-row button{min-width:130px}
+.v18s6-show-row button[hidden]{display:none}
+.v18s6-hidden-item{display:none!important}

@@ -4,12 +4,9 @@
   const peso=v=>'₱'+Number(v||0).toLocaleString('en-PH',{maximumFractionDigits:2});
   const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   function installQuickActions(){
-    const host=document.querySelector('.admin-top-actions');if(!host||q('v18s5ShareLink'))return;
-    const publicLink=host.querySelector('.top-public-link');
-    const share=document.createElement('button');share.id='v18s5ShareLink';share.type='button';share.className='v18s5-quick';share.title='Share booking link';share.setAttribute('aria-label','Share booking link');share.textContent='🔗';
+    const host=document.querySelector('.admin-top-actions');if(!host||q('v18s5Weekly'))return;
     const weekly=document.createElement('button');weekly.id='v18s5Weekly';weekly.type='button';weekly.className='v18s5-quick';weekly.title='Weekly availability';weekly.setAttribute('aria-label','Weekly availability');weekly.textContent='🗓️';
-    if(publicLink){publicLink.after(share);share.after(weekly);}else{host.prepend(weekly);host.prepend(share);}
-    share.onclick=async()=>{const url='https://pickyla-coaching.xbalanced.net/';if(navigator.share){try{await navigator.share({title:'PICKYLA Coaching',text:'Book your PICKYLA coaching session:',url});return;}catch(e){if(e?.name==='AbortError')return;}}try{await navigator.clipboard.writeText(url);if(typeof toast==='function')toast('Booking link copied');}catch(_e){prompt('Copy booking link:',url);}};
+    const bell=q('adminNotificationBtn');if(bell)bell.before(weekly);else host.prepend(weekly);
     weekly.onclick=()=>{q('weeklyShareSection')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>q('generateWeeklyBtn')?.focus(),450);};
   }
   function installFinanceSnapshot(){

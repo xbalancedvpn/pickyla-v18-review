@@ -10,7 +10,7 @@
     <button type="button" class="primary" data-jump="todayCommandSection">Today</button>
     <button type="button" data-jump="quickBookingForm">+ New Booking</button>
     <button type="button" data-jump="inquirySection">Inquiries</button>
-    <button type="button" data-jump="clientHubSection">Clients</button>
+    <button type="button" data-jump="clientHubSection">Players</button>
     <button type="button" data-jump="programHubSection">Programs</button>
     <button type="button" data-jump="adminReportsSection">Reports</button>
   </div><div><span id="v17gFreshness" class="v17g-freshness">Live data</span> <button id="v17gRefresh" type="button" class="v17g-refresh">↻ Refresh</button></div>`;
@@ -70,19 +70,19 @@
   }
   async function removeClientProfile(client){
     if(!client?.id)return;
-    let usage;try{usage=await clientUsage(client.id);}catch(e){return alert(`Could not check client history.\n\n${e.message||e}`);}
+    let usage;try{usage=await clientUsage(client.id);}catch(e){return alert(`Could not check player history.\n\n${e.message||e}`);}
     const hasHistory=Object.values(usage).some(Number);
     if(hasHistory){
       const detail=[usage.primaryBookings?`${usage.primaryBookings} primary booking${usage.primaryBookings===1?'':'s'}`:'',usage.participantLinks?`${usage.participantLinks} booking participant link${usage.participantLinks===1?'':'s'}`:'',usage.programs?`${usage.programs} program enrollment${usage.programs===1?'':'s'}`:'',usage.assessments?`${usage.assessments} assessment${usage.assessments===1?'':'s'}`:''].filter(Boolean).join(', ');
-      const ok=confirm(`${client.full_name} already has linked coaching history (${detail}).\n\nTo protect bookings, payments, programs and progress records, Pickyla will ARCHIVE this client instead of permanently deleting the profile. The client will disappear from the active client list.\n\nArchive this client?`);
+      const ok=confirm(`${client.full_name} already has linked coaching history (${detail}).\n\nTo protect bookings, payments, programs and progress records, Pickyla will ARCHIVE this player instead of permanently deleting the profile. The player will disappear from the active player list.\n\nArchive this player?`);
       if(!ok)return;
       const {error}=await db.from('clients').update({is_active:false}).eq('id',client.id);if(error)return alert(error.message);
-      closeClientProfile();toast('Client archived');await loadV17Clients();return;
+      closeClientProfile();toast('Player archived');await loadV17Clients();return;
     }
     const ok=confirm(`Permanently delete ${client.full_name}?\n\nNo linked bookings, programs or progress records were found. This action cannot be undone.`);if(!ok)return;
     const typed=prompt(`Type DELETE to permanently remove ${client.full_name}.`);if(typed!=='DELETE')return;
     const {error}=await db.from('clients').delete().eq('id',client.id);if(error)return alert(error.message);
-    closeClientProfile();toast('Client permanently deleted');await loadV17Clients();
+    closeClientProfile();toast('Player permanently deleted');await loadV17Clients();
   }
   const oldRenderClients=(typeof renderV17Clients==='function')?renderV17Clients:null;
   if(oldRenderClients){
@@ -103,7 +103,7 @@
     openV17Client=async function(id){
       await oldOpenClient(id);
       const actions=$g('clientDetailSection')?.querySelector('.client-detail-actions');if(!actions)return;
-      let remove=$g('v17gRemoveClientBtn');if(!remove){remove=document.createElement('button');remove.id='v17gRemoveClientBtn';remove.type='button';remove.className='v17g-client-remove-detail';remove.textContent='Remove Client';actions.appendChild(remove);}
+      let remove=$g('v17gRemoveClientBtn');if(!remove){remove=document.createElement('button');remove.id='v17gRemoveClientBtn';remove.type='button';remove.className='v17g-client-remove-detail';remove.textContent='Remove Player';actions.appendChild(remove);}
       remove.onclick=()=>{if(typeof v17SelectedClient!=='undefined'&&v17SelectedClient)removeClientProfile(v17SelectedClient);};
     };
   }
@@ -113,7 +113,7 @@
     <button type="button" data-jump="todayCommandSection"><b>◷</b>Today</button>
     <button type="button" data-jump="quickBookingForm"><b>＋</b>Book</button>
     <button type="button" class="alert" data-count="0"><b>●</b>Alerts</button>
-    <button type="button" data-jump="clientHubSection"><b>♙</b>Clients</button>
+    <button type="button" data-jump="clientHubSection"><b>♙</b>Players</button>
     <button type="button" class="menu"><b>☰</b>Menu</button>`;admin.appendChild(dock);
   dock.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>jump(b.dataset.jump));dock.querySelector('.alert').onclick=()=>$g('adminNotificationBtn')?.click();dock.querySelector('.menu').onclick=()=>$g('adminMenuBtn')?.click();
 
