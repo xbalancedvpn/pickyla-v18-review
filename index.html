@@ -117,9 +117,29 @@
         <div id="groupSizeWrap" class="group-size hidden"><label>Exact number of players<select id="groupSize"></select></label></div>
       </div>
 
+      <div class="court-area" id="courtArea">
+        <span class="step">STEP 4</span><h3>Choose court</h3>
+        <p class="court-intro">Select where the coaching session will be held. Court fee is separate and is not included in the coaching total.</p>
+        <div class="court-fields">
+          <label>Court
+            <select id="bookingCourt">
+              <option value="">Select court</option>
+              <option value="NANOMOLY">NANOMOLY</option>
+              <option value="DINK VALLEY">DINK VALLEY</option>
+              <option value="HOMECOURT">HOMECOURT</option>
+              <option value="CASA PLAY">CASA PLAY</option>
+              <option value="OTHERS">OTHERS</option>
+            </select>
+          </label>
+          <label id="bookingCourtOtherWrap" class="hidden">Other court
+            <input id="bookingCourtOther" type="text" maxlength="120" placeholder="Enter court name">
+          </label>
+        </div>
+      </div>
+
       <div id="coachingContext" class="coaching-context hidden"></div>
       <div class="request-details participant-details">
-        <span class="step">STEP 4</span><h3>Player details</h3>
+        <span class="step">STEP 5</span><h3>Player details</h3>
         <p class="participant-intro">Enter every player's <strong>first name and last name</strong>. Contact is optional. Using the same full name each time keeps coaching history and progress records clean.</p>
         <div id="publicParticipantList" class="public-participant-list"></div>
         <div class="remember-details-row">
