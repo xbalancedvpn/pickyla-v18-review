@@ -6,3 +6,18 @@
 .v18s6-show-row button{min-width:130px}
 .v18s6-show-row button[hidden]{display:none}
 .v18s6-hidden-item{display:none!important}
+/* Mobile detailed-report blank-space hotfix */
+#adminReportsSection{height:auto!important;min-height:0!important;max-height:none!important}
+#adminReportsSection .report-filter-grid{height:auto!important;min-height:0!important;grid-auto-rows:max-content!important;align-content:start!important}
+#adminReportsSection #reportStatusWrap:not(.hidden){display:grid!important;height:auto!important;min-height:0!important}
+#adminReportsSection #reportCollectionFilter,
+#adminReportsSection #generateDetailedReport{visibility:visible!important;opacity:1!important}
+#adminReportsSection #reportCollectionFilter{display:block!important;height:48px!important;min-height:48px!important}
+#adminReportsSection #generateDetailedReport{display:block!important;min-height:48px!important;height:48px!important}
+#adminReportsSection .detailed-report-result.hidden{display:none!important}
+@media(max-width:700px){
+  #adminReportsSection{padding-bottom:22px!important}
+  #adminReportsSection .report-filter-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+  #adminReportsSection .report-filter-grid>label,
+  #adminReportsSection .report-filter-grid>button{width:100%!important;max-width:100%!important}
+}
