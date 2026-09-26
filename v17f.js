@@ -58,12 +58,12 @@
       try{
         saveParticipantMemory(players);
         const selfAssessment=getSelfAssessment();
-        const {data,error}=await db.rpc('submit_public_inquiry_v17f',{
+        const {data,error}=await db.rpc('submit_public_inquiry_v18court',{
           p_preferred_date:keyDate(selectedDate),p_start_hour:selectedStart,p_end_hour:selectedEnd,
           p_participant_count:players.length,p_coaching_type:selectedPackage,
           p_quoted_rate:Number(String(selectedRate||'').replace(/[^0-9.]/g,''))||null,
           p_source_text:text,p_goal_focus:selectedGoalLabel||null,
-          p_program_interest:selectedProgramInterest?.name||null,p_participants:players,
+          p_program_interest:selectedProgramInterest?.name||null,p_court_name:selectedCourtName(),p_participants:players,
           p_self_assessment:selfAssessment
         });
         if(error)throw error;
@@ -73,7 +73,7 @@
           'Request sent to Pickyla Admin. Your slot is still subject to final confirmation by Kyla.';
       }catch(e){
         requestSubmitStatus.className='request-submit-status error';
-        requestSubmitStatus.textContent=(e.message||'Could not send your request. Please try Messenger instead.')+(String(e.message||'').includes('submit_public_inquiry_v17f')?' Run the v17-F Supabase migration first.':'');
+        requestSubmitStatus.textContent=(e.message||'Could not send your request. Please try Messenger instead.')+(String(e.message||'').includes('submit_public_inquiry_v18court')?' Run the v17-F Supabase migration first.':'');
       }finally{
         sendRequestButton.disabled=false;sendRequestButton.textContent=original;
         setTimeout(()=>{if(requestSubmitStatus)delete requestSubmitStatus.dataset.keep;},1200);
