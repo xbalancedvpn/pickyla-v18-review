@@ -152,7 +152,8 @@
     x.fillStyle='#111';x.font='900 24px Arial';x.fillText('COACH NOTE',70,1852);
     x.fillStyle='#444';x.font='500 19px Arial';wrap(x,current.coach_note||'Continue building repeatable technique and confident decision-making.',70,1885,1100,27,3);
     x.fillStyle='#111';x.fillRect(0,H-82,W,82);x.fillStyle='#f5c400';x.font='900 22px Arial';x.fillText('PICKYLA',70,H-36);
-    x.textAlign='right';x.fillStyle='#bbb';x.font='500 17px Arial';x.fillText(`${assessments.length} assessment${assessments.length===1?'':'s'} • Player-safe card`,W-70,H-36);x.textAlign='left';
+    x.textAlign='right';x.fillStyle='#bbb';x.font='500 17px Arial';x.fillText(`${assessments.length} assessment${assessments.length===1?'':'s'} • Player-safe card`,W-70,H-36);
+    x.textAlign='center';x.fillStyle='#9b9b9b';x.font='600 16px Arial';x.fillText('© 2026 XBALANCED DIGITAL SOLUTIONS',W/2,H-36);x.textAlign='left';
     S2.progressDataUrl=cv.toDataURL('image/png');S2.progressFilename=`pickyla-progress-${slug(client.full_name)}-${dateKey()}.png`;
     q('progressCardPreview').src=S2.progressDataUrl;q('progressCardDialog')?.showModal();
   }
@@ -192,7 +193,8 @@
     }
     x.fillStyle='#f5c400';x.font='900 17px Arial';x.fillText('COACH',72,1140);x.fillStyle='#fff';x.font='800 25px Arial';x.fillText('Kyla Nicole Soriano',72,1177);
     x.fillStyle='#f5c400';x.font='900 17px Arial';x.fillText('LOCATION',72,1225);x.fillStyle='#fff';x.font='700 22px Arial';x.fillText('Santiago City, Isabela',72,1260);
-    x.textAlign='right';x.fillStyle='#888';x.font='500 17px Arial';x.fillText('Please message PICKYLA for schedule changes.',W-64,1298);x.textAlign='left';
+    x.textAlign='right';x.fillStyle='#888';x.font='500 17px Arial';x.fillText('Please message PICKYLA for schedule changes.',W-64,1298);
+    x.textAlign='center';x.fillStyle='#6f6f6f';x.font='600 15px Arial';x.fillText('© 2026 XBALANCED DIGITAL SOLUTIONS',W/2,1330);x.textAlign='left';
     S2.confirmationDataUrl=cv.toDataURL('image/png');S2.confirmationFilename=`pickyla-booking-${slug(b.client_name)}-${b.session_date}.png`;
     q('confirmationCardPreview').src=S2.confirmationDataUrl;q('confirmationCardDialog')?.showModal();
   }
@@ -238,7 +240,8 @@
       x.textAlign='left';const foot=top+headH+16*rowH+34;
       x.fillStyle='#111';x.font='900 20px Arial';x.fillText('STATUS',left,foot+26);
       [['#dff4df','#225b2d','AVAILABLE'],['#f7c9c5','#8b2522','BOOKED'],['#d8d8d8','#4b4b4b','BLOCKED'],['#ecebe7','#92918c','PAST']].forEach((it,i)=>{const xx=left+110+i*245;round(x,xx,foot,215,43,10,it[0]);x.fillStyle=it[1];x.textAlign='center';x.font='900 15px Arial';x.fillText(it[2],xx+107,foot+27);});
-      x.textAlign='right';x.fillStyle='#777';x.font='500 15px Arial';x.fillText('PICKYLA • Play • Learn • Improve',W-left,foot+27);x.textAlign='left';
+      x.textAlign='right';x.fillStyle='#777';x.font='500 15px Arial';x.fillText('PICKYLA • Play • Learn • Improve',W-left,foot+27);
+      x.textAlign='center';x.fillStyle='#777';x.font='600 16px Arial';x.fillText('© 2026 XBALANCED DIGITAL SOLUTIONS',W/2,H-24);x.textAlign='left';
       S2.weeklyDataUrl=cv.toDataURL('image/png');S2.weeklyFilename=`pickyla-weekly-${start}-to-${end}.png`;
       q('weeklyPreview').src=S2.weeklyDataUrl;q('weeklyPreviewWrap')?.classList.remove('hidden');q('weeklyPreviewWrap')?.scrollIntoView({behavior:'smooth',block:'nearest'});
       if(typeof toast==='function')toast('Weekly schedule card ready');
