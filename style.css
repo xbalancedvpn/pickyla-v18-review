@@ -137,3 +137,34 @@ footer{background:#0a0a0a;color:#d8d8d8;align-items:center}
 .court-fields label{font-size:11px;font-weight:800;color:#5a675f}
 .court-fields select,.court-fields input{margin-top:6px;width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px;color:var(--ink)}
 @media(max-width:620px){.court-fields{grid-template-columns:1fr}}
+
+
+/* XBALANCED DIGITAL SOLUTIONS credit */
+.site-credit-footer{
+  background:#111;
+  color:#aaa69b;
+  border-top:1px solid rgba(245,196,0,.28);
+  text-align:center;
+  padding:24px 18px 28px;
+  font-size:12px;
+  line-height:1.55;
+}
+.site-credit-footer strong{
+  display:block;
+  color:#f5c400;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.site-credit-footer span{
+  display:block;
+  margin-top:3px;
+  color:#d0cdc5;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+}
+@media(max-width:720px){
+  .site-credit-footer{padding:20px 14px 26px}
+  .admin-credit-footer{padding-bottom:108px}
+}

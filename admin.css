@@ -120,3 +120,34 @@ body{background:#fbfaf7;color:#111}
 /* ===== v17-E admin navigation + testimonial review ===== */
 html{scroll-behavior:smooth}.auth-public-link{display:flex;align-items:center;justify-content:center;margin-top:16px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;color:#111;text-decoration:none;font-size:12px;font-weight:800;background:#fffaf0}.auth-public-link:hover{border-color:#e0bc2b;background:#fff5c9}.admin-top-actions{display:flex;align-items:center;gap:8px}.top-public-link,.menu-btn{border:0;background:#fff4cf;color:#111;font-weight:800;border-radius:10px;padding:9px 11px;text-decoration:none;font-size:11px;cursor:pointer}.menu-btn{background:#111;color:#f5c400}.admin-menu-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:39}.admin-menu-drawer{position:fixed;top:0;right:0;width:min(360px,92vw);height:100dvh;background:#fff;z-index:40;box-shadow:-24px 0 70px rgba(0,0,0,.18);padding:22px;transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column}.admin-menu-drawer.open{transform:translateX(0)}.admin-menu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:15px}.admin-menu-head h2{margin:5px 0 0;font:800 26px Manrope}.admin-menu-head button{width:38px;height:38px;border:0;border-radius:50%;background:#f0eee8;font-size:25px;cursor:pointer}.admin-menu-links{display:grid;gap:7px;margin:17px 0;overflow:auto}.admin-menu-links a{display:flex;align-items:center;justify-content:space-between;padding:12px 13px;border:1px solid #ece8dd;border-radius:12px;text-decoration:none;color:#111;font-size:12px;font-weight:800;background:#fcfbf7}.admin-menu-links a::after{content:'›';color:#b08d00;font-size:18px}.admin-menu-links a:hover{border-color:#e1c349;background:#fff9df}.admin-menu-public{margin-top:auto;display:block;text-align:center;padding:12px;border-radius:12px;background:#111;color:#f5c400;text-decoration:none;font-weight:800;font-size:12px}#adminDashboardTop,#todayCommandSection,#paymentDashboardSection,#adminReportsSection,#weeklyShareSection,#shareToolsSection,#clientHubSection,#programHubSection,#bookingToolsSection,#inquirySection,#calendarSection,#daySection{scroll-margin-top:86px}.testimonial-review-note{font-size:10px;color:var(--muted);margin:0}.testimonial-admin-card.pending{border-color:#e5bd26;background:#fffaf0}.testimonial-admin-card.rejected{opacity:.72}.testimonial-admin-card .testimonial-status-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:7px}.testimonial-status-badge{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;padding:5px 7px;border-radius:999px;background:#efefec;color:#555}.testimonial-status-badge.pending{background:#fff1b8;color:#755a00}.testimonial-status-badge.approved{background:#e6f4e4;color:#2b642d}.testimonial-status-badge.rejected{background:#f5e5e3;color:#8a3933}.testimonial-source-badge{font-size:8px;font-weight:800;color:#777}.testimonial-admin-actions .edit{background:#f0f0ed;color:#222}.testimonial-admin-actions .approve{background:#111;color:#f5c400}.testimonial-admin-actions .reject{background:#fff0ee;color:#913f39}
 @media(max-width:700px){.admin-topbar{padding:0 12px}.admin-top-actions{gap:5px}.top-public-link span,.menu-btn span{display:none}.top-public-link,.menu-btn,.text-btn{padding:9px 10px;font-size:10px}.admin-menu-drawer{padding:18px}.admin-menu-links a{padding:11px 12px}}
+
+
+/* XBALANCED DIGITAL SOLUTIONS credit */
+.site-credit-footer{
+  background:#111;
+  color:#aaa69b;
+  border-top:1px solid rgba(245,196,0,.28);
+  text-align:center;
+  padding:24px 18px 28px;
+  font-size:12px;
+  line-height:1.55;
+}
+.site-credit-footer strong{
+  display:block;
+  color:#f5c400;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.site-credit-footer span{
+  display:block;
+  margin-top:3px;
+  color:#d0cdc5;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+}
+@media(max-width:720px){
+  .site-credit-footer{padding:20px 14px 26px}
+  .admin-credit-footer{padding-bottom:108px}
+}
