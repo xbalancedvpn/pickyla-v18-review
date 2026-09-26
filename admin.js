@@ -33,10 +33,10 @@ async function loadAdminCalendar(){const y=adminCalendarView.getFullYear(),m=adm
 let weeklyImageDataUrl="",weeklyImageFilename="";
 const weeklyWeekDate=$("weeklyWeekDate"),weeklyRangeLabel=$("weeklyRangeLabel"),weeklyPreviewWrap=$("weeklyPreviewWrap"),weeklyPreview=$("weeklyPreview"),downloadWeeklyBtn=$("downloadWeeklyBtn");
 function localDateFromString(s){const [y,m,d]=String(s).split("-").map(Number);return new Date(y,m-1,d);}
-function sundayOfWeek(input){const d=input instanceof Date?new Date(input):localDateFromString(input);d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;}
-function weeklyDates(input){const start=sundayOfWeek(input),days=[];for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);days.push(d);}return days;}
+function mondayOfWeek(input){const d=input instanceof Date?new Date(input):localDateFromString(input);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
+function weeklyDates(input){const start=mondayOfWeek(input),days=[];for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);days.push(d);}return days;}
 function weekRangeText(input){const days=weeklyDates(input),a=days[0],b=days[6];const sameMonth=a.getMonth()===b.getMonth(),sameYear=a.getFullYear()===b.getFullYear();if(sameMonth&&sameYear)return `${a.toLocaleDateString("en-PH",{month:"long"})} ${a.getDate()}–${b.getDate()}, ${a.getFullYear()}`;if(sameYear)return `${a.toLocaleDateString("en-PH",{month:"short",day:"numeric"})} – ${b.toLocaleDateString("en-PH",{month:"short",day:"numeric"})}, ${a.getFullYear()}`;return `${a.toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"})} – ${b.toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"})}`;}
-function refreshWeeklyRange(){if(!weeklyWeekDate)return;weeklyRangeLabel.textContent=`Sunday–Saturday • ${weekRangeText(weeklyWeekDate.value||todayStr())}`;}
+function refreshWeeklyRange(){if(!weeklyWeekDate)return;weeklyRangeLabel.textContent=`Monday–Sunday • ${weekRangeText(weeklyWeekDate.value||todayStr())}`;}
 if(weeklyWeekDate){weeklyWeekDate.value=todayStr();weeklyWeekDate.onchange=refreshWeeklyRange;refreshWeeklyRange();}
 function roundedRect(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}}
 function fitText(ctx,text,maxWidth,startSize,minSize=16,weight=700){let size=startSize;while(size>minSize){ctx.font=`${weight} ${size}px Arial, sans-serif`;if(ctx.measureText(text).width<=maxWidth)break;size-=1;}return size;}
