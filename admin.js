@@ -281,7 +281,21 @@ $("quickBookingForm").onsubmit=async e=>{
 async function v17LegacyCancelSync(){/* reserved */}
 
 async function authRefresh(){
-  const {data:{session}}=await db.auth.getSession();if(session){loginView.classList.add("hidden");adminView.classList.remove("hidden");const t=todayStr();adminDate.value||=t;$("bookingDate").value||=t;$("blockFromDate").value||=t;$("blockToDate").value||=t;adminCalendarView=new Date();adminCalendarView.setDate(1);initDetailedReportDates();await Promise.all([loadV17Programs(),loadV17Clients(),loadDay(),loadBookingAvailability(),loadReports(),loadAdminCalendar(),loadInquiries(),loadCollectionAlerts(),loadTodayCommandCenter(),loadPaymentDashboard(),loadV17BTestimonials()]);}else{adminView.classList.add("hidden");loginView.classList.remove("hidden");}
+  try{
+    const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError)throw sessionError;
+    if(session){
+      loginView.classList.add("hidden");adminView.classList.remove("hidden");
+      const drawer=$("adminMenuDrawer");if(!drawer||!drawer.classList.contains("open")){document.body.style.overflow="";document.documentElement.style.overflow="";}
+      const t=todayStr();adminDate.value||=t;$("bookingDate").value||=t;$("blockFromDate").value||=t;$("blockToDate").value||=t;adminCalendarView=new Date();adminCalendarView.setDate(1);initDetailedReportDates();
+      const jobs=[
+        ["Programs",()=>loadV17Programs()],["Players",()=>loadV17Clients()],["Day",()=>loadDay()],["Availability",()=>loadBookingAvailability()],
+        ["Reports",()=>loadReports()],["Calendar",()=>loadAdminCalendar()],["Inquiries",()=>loadInquiries()],["Collection alerts",()=>loadCollectionAlerts()],
+        ["Today",()=>loadTodayCommandCenter()],["Payments",()=>loadPaymentDashboard()],["Testimonials",()=>loadV17BTestimonials()]
+      ];
+      const results=await Promise.allSettled(jobs.map(([,fn])=>Promise.resolve().then(fn)));
+      results.forEach((r,i)=>{if(r.status==="rejected")console.warn("Pickyla loader failed:",jobs[i][0],r.reason);});
+    }else{adminView.classList.add("hidden");loginView.classList.remove("hidden");document.body.style.overflow="";document.documentElement.style.overflow="";}
+  }catch(e){console.error("Pickyla admin refresh failed:",e);document.body.style.overflow="";document.documentElement.style.overflow="";}
 }
 
 // Refresh operational data while the dashboard is open.
@@ -362,5 +376,14 @@ setTimeout(()=>{if(adminView&&!adminView.classList.contains("hidden")){loadDay()
 
 
 // ===== v17-E admin quick navigation =====
-function v17eSetMenu(open){const drawer=$("adminMenuDrawer"),backdrop=$("adminMenuBackdrop"),btn=$("adminMenuBtn");if(!drawer||!backdrop)return;drawer.classList.toggle("open",open);drawer.setAttribute("aria-hidden",open?"false":"true");backdrop.classList.toggle("hidden",!open);if(btn)btn.setAttribute("aria-expanded",open?"true":"false");document.body.style.overflow=open?"hidden":"";}
+function v17eSetMenu(open){const drawer=$("adminMenuDrawer"),backdrop=$("adminMenuBackdrop"),btn=$("adminMenuBtn");if(!drawer||!backdrop){document.body.style.overflow="";return;}drawer.classList.toggle("open",open);drawer.setAttribute("aria-hidden",open?"false":"true");backdrop.classList.toggle("hidden",!open);if(btn)btn.setAttribute("aria-expanded",open?"true":"false");document.body.style.overflow=open?"hidden":"";document.documentElement.style.overflow=open?"hidden":"";}
 if($("adminMenuBtn"))$("adminMenuBtn").onclick=()=>v17eSetMenu(true);if($("adminMenuClose"))$("adminMenuClose").onclick=()=>v17eSetMenu(false);if($("adminMenuBackdrop"))$("adminMenuBackdrop").onclick=()=>v17eSetMenu(false);document.querySelectorAll(".admin-menu-links a").forEach(a=>a.addEventListener("click",()=>v17eSetMenu(false)));document.addEventListener("keydown",e=>{if(e.key==="Escape")v17eSetMenu(false);});
+
+// Defensive mobile scroll recovery after refresh / bfcache restore.
+function v18RecoverAdminScroll(){
+  const drawer=$("adminMenuDrawer");
+  if(!drawer||!drawer.classList.contains("open")){document.body.style.overflow="";document.documentElement.style.overflow="";}
+}
+window.addEventListener("pageshow",()=>setTimeout(v18RecoverAdminScroll,0));
+window.addEventListener("load",()=>setTimeout(v18RecoverAdminScroll,0));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(v18RecoverAdminScroll,0);});
