@@ -41,17 +41,17 @@
   ['pendingCount','adminNotificationCount','collectionDueCount','cancelCount'].forEach(id=>{const el=$g(id);if(el)new MutationObserver(syncActionStrip).observe(el,{childList:true,characterData:true,subtree:true});});
 
   // Today filters reduce scanning when the day gets busy.
-  const todayList=$g('todaySessionList');let todayFilter='all';
+  const todayList=$g('todaySessionList');let todayFilter='active';
   if(todayList){
     const tools=document.createElement('div');tools.className='v17g-today-tools';tools.innerHTML=`<div class="v17g-filter-chips">
-      <button type="button" class="active" data-filter="all">All</button><button type="button" data-filter="action">Needs Action</button><button type="button" data-filter="upcoming">Upcoming</button><button type="button" data-filter="completed">Completed</button><button type="button" data-filter="outstanding">Outstanding</button>
+      <button type="button" class="active" data-filter="active">Active</button><button type="button" data-filter="action">Needs Action</button><button type="button" data-filter="upcoming">Upcoming</button><button type="button" data-filter="completed">Completed</button><button type="button" data-filter="outstanding">Outstanding</button>
     </div><span id="v17gTodayCount" class="v17g-today-count"></span>`;
     todayList.insertAdjacentElement('beforebegin',tools);
     tools.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{todayFilter=b.dataset.filter;tools.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));applyTodayFilter();});
     new MutationObserver(()=>setTimeout(applyTodayFilter,0)).observe(todayList,{childList:true,subtree:true});
   }
-  function classifyToday(el){const t=el.textContent.toLowerCase();return{action:t.includes('needs closing')||t.includes('balance ₱')||t.includes('balance p'),upcoming:t.includes('scheduled')&&!t.includes('needs closing'),completed:t.includes('completed'),outstanding:(t.includes('balance ₱')||t.includes('balance p'))&&!t.includes('balance ₱0')&&!t.includes('balance p0')};}
-  function applyTodayFilter(){if(!todayList)return;const items=[...todayList.querySelectorAll('.today-session-item')];let shown=0;items.forEach(el=>{const c=classifyToday(el),ok=todayFilter==='all'||Boolean(c[todayFilter]);el.classList.toggle('v17g-filtered',!ok);if(ok)shown++;});const label=$g('v17gTodayCount');if(label)label.textContent=`${shown} shown`;}
+  function classifyToday(el){const t=el.textContent.toLowerCase(),needsClosing=t.includes('needs closing'),scheduled=t.includes('scheduled'),completed=t.includes('completed'),outstanding=(t.includes('balance ₱')||t.includes('balance p'))&&!t.includes('balance ₱0')&&!t.includes('balance p0');return{active:scheduled,action:needsClosing||(completed&&outstanding),upcoming:scheduled&&!needsClosing,completed,outstanding};}
+  function applyTodayFilter(){if(!todayList)return;const items=[...todayList.querySelectorAll('.today-session-item')];let shown=0;items.forEach(el=>{const c=classifyToday(el),ok=Boolean(c[todayFilter]);el.classList.toggle('v17g-filtered',!ok);if(ok)shown++;});const label=$g('v17gTodayCount');if(label)label.textContent=`${shown} shown`;}
 
   // Client cleanup: permanently delete empty profiles, archive profiles that already have history.
   async function clientUsage(clientId){
