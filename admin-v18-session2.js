@@ -191,7 +191,7 @@
       x.fillStyle='#fff';x.font='800 28px Arial';y=wrap(x,val,100,y+38,850,35,2)+46;
     }
     x.fillStyle='#f5c400';x.font='900 17px Arial';x.fillText('COACH',72,1140);x.fillStyle='#fff';x.font='800 25px Arial';x.fillText('Kyla Nicole Soriano',72,1177);
-    x.fillStyle='#f5c400';x.font='900 17px Arial';x.fillText('LOCATION',72,1225);x.fillStyle='#fff';x.font='700 22px Arial';x.fillText(b.court_name||'Santiago City, Isabela',72,1260);
+    x.fillStyle='#f5c400';x.font='900 17px Arial';x.fillText('LOCATION',72,1225);x.fillStyle='#fff';x.font='700 22px Arial';x.fillText('Santiago City, Isabela',72,1260);
     x.textAlign='right';x.fillStyle='#888';x.font='500 17px Arial';x.fillText('Please message PICKYLA for schedule changes.',W-64,1298);x.textAlign='left';
     S2.confirmationDataUrl=cv.toDataURL('image/png');S2.confirmationFilename=`pickyla-booking-${slug(b.client_name)}-${b.session_date}.png`;
     q('confirmationCardPreview').src=S2.confirmationDataUrl;q('confirmationCardDialog')?.showModal();
