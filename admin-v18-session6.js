@@ -43,14 +43,25 @@
     });
   }
 
+
+  function repairDetailedReportLayout(){
+    const section=q('adminReportsSection'),grid=section?.querySelector('.report-filter-grid'),status=q('reportStatusWrap'),select=q('reportCollectionFilter'),button=q('generateDetailedReport');
+    if(!section||!grid)return;
+    section.style.height='auto';section.style.minHeight='0';section.style.maxHeight='none';
+    grid.style.height='auto';grid.style.minHeight='0';grid.style.alignContent='start';
+    if(status&&!status.classList.contains('hidden')){status.style.height='auto';status.style.minHeight='0';}
+    if(select){select.style.visibility='visible';select.style.opacity='1';}
+    if(button){button.style.visibility='visible';button.style.opacity='1';}
+  }
+
   function install(){
-    cleanupHeader();
+    cleanupHeader();repairDetailedReportLayout();
     installCompactList({listId:'clientList',buttonId:'v18s6PlayerListToggle',limit:5,label:'players'});
     installCompactList({listId:'clientSessionHistory',buttonId:'v18s6PlayerHistoryToggle',limit:5,label:'player session history'});
     fixPlayerLabels();
     const obs=new MutationObserver(muts=>{for(const m of muts)for(const n of m.addedNodes)if(n.nodeType===1)fixPlayerLabels(n);});
     obs.observe(document.body,{childList:true,subtree:true});
-    window.pickylaV18Session6Ready=true;
+    q('detailedReportType')?.addEventListener('change',()=>setTimeout(repairDetailedReportLayout,0));window.addEventListener('resize',repairDetailedReportLayout);window.pickylaV18Session6Ready=true;
   }
 
   let tries=0,t=setInterval(()=>{tries++;if(q('adminView')&&q('clientList')){clearInterval(t);install();}else if(tries>50)clearInterval(t);},200);
