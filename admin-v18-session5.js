@@ -35,6 +35,6 @@
     const sync=()=>{const cards=[...list.children].filter(x=>!x.classList.contains('empty'));q('v18s5GalleryCount').textContent=`${cards.length} photo${cards.length===1?'':'s'}`;const btn=q('v18s5GalleryToggle');btn.hidden=cards.length<=5;btn.textContent=expanded?'Show Less':`Show All (${cards.length})`;list.classList.toggle('v18s5-gallery-expanded',expanded);};
     q('v18s5GalleryToggle').onclick=()=>{expanded=!expanded;sync();};new MutationObserver(()=>setTimeout(sync,0)).observe(list,{childList:true});sync();
   }
-  function install(){installQuickActions();installFinanceSnapshot();installGalleryCompact();if(adminActive())scheduleFinance(0);window.addEventListener('pickyla:admin-active',()=>scheduleFinance(120));window.pickylaV18Session5Ready=true;}
+  function install(){installQuickActions();installFinanceSnapshot();installGalleryCompact();window.addEventListener('pickyla:admin-active',()=>scheduleFinance(900));if(window.__pickylaAdminActiveReady)scheduleFinance(900);window.pickylaV18Session5Ready=true;}
   let tries=0,t=setInterval(()=>{tries++;if(typeof db!=='undefined'&&q('paymentDashboardSection')){clearInterval(t);install();}else if(tries>40)clearInterval(t);},250);
 })();
