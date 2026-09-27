@@ -293,6 +293,7 @@ $("quickBookingForm").onsubmit=async e=>{
 async function v17LegacyCancelSync(){/* reserved */}
 
 function v18SetDataStatus(message,kind="checking"){
+  window.pickylaDiag?.(message,kind);
   const el=$("v18DataStatus");if(!el)return;
   el.textContent=message;
   const styles={
