@@ -88,5 +88,7 @@
     const priorSet=typeof setV17SessionStatus==='function'?setV17SessionStatus:null;if(priorSet)setV17SessionStatus=async function(...args){const r=await priorSet(...args);await load();return r;};
   }
   function install(){installSections();installManualPaymentFields();wrapRefreshes();window.addEventListener('pickyla:admin-active',()=>scheduleLoad(350));if(window.__pickylaAdminActiveReady)scheduleLoad(350);window.pickylaV18Session4Ready=true;}
-  let tries=0,t=setInterval(()=>{tries++;if(typeof db!=='undefined'&&q('todayCommandSection')&&q('quickBookingForm')){clearInterval(t);install();}else if(tries>40)clearInterval(t);},250);
+  function activate(){if(typeof db!=='undefined'&&q('todayCommandSection')&&q('quickBookingForm'))install();}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
