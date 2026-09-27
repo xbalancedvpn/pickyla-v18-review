@@ -162,7 +162,7 @@
     const qb=q('quickBookingForm');if(qb&&qb.onsubmit){const old=qb.onsubmit;qb.onsubmit=async function(e){await old.call(this,e);setTimeout(load,350);};}
     const priorSet=typeof setV17SessionStatus==='function'?setV17SessionStatus:null;if(priorSet)setV17SessionStatus=async function(...args){const r=await priorSet(...args);await load();return r;};
   }
-  function install(){installSections();installManualPaymentFields();installBlockHourPicker();wrapRefreshes();window.addEventListener('pickyla:admin-active',()=>scheduleLoad(350));if(window.__pickylaAdminActiveReady)scheduleLoad(350);window.pickylaV18Session4Ready=true;}
+  function install(){installSections();installManualPaymentFields();installBlockHourPicker();wrapRefreshes();window.pickylaRefreshOperations=load;window.addEventListener('pickyla:admin-active',()=>scheduleLoad(350));if(window.__pickylaAdminActiveReady)scheduleLoad(350);window.pickylaV18Session4Ready=true;}
   function activate(){if(typeof db!=='undefined'&&q('todayCommandSection')&&q('quickBookingForm'))install();}
   window.addEventListener('pickyla:admin-active',activate,{once:true});
   if(window.__pickylaAdminActiveReady)activate();
