@@ -209,11 +209,8 @@
   function install(){
     if(typeof db==='undefined' || typeof loadV17Clients!=='function' || !document.querySelector('.v17g-client-maintenance-dialog'))return false;
     installCreateOverride();installProfileEnhancement();renamePlayerLanguage();enhanceSearch();
-    if(!window.__pickylaS1AdminActiveBound){
-      window.__pickylaS1AdminActiveBound=true;
-      window.addEventListener('pickyla:admin-active',()=>{if(adminActive()&&typeof loadV17Clients==='function')loadV17Clients();});
-    }
-    if(adminActive()&&typeof loadV17Clients==='function')loadV17Clients();
+    // Core Admin bootstrap owns player loading. This module only enhances the UI
+    // so it cannot create a duplicate Supabase query during startup.
     window.pickylaV18Session1Ready=true;
     return true;
   }
