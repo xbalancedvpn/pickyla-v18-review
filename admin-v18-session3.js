@@ -207,13 +207,31 @@
       });
     };
     window.pickylaV18S3Testimonials=true;
-    loadV17BTestimonials();
   }
 
+  function adminActive(){const v=$('adminView');return !!v&&!v.classList.contains('hidden');}
+  let settingsLoadPromise=null;
+  async function loadAdminContent(){
+    if(!adminActive())return;
+    if(settingsLoadPromise)return settingsLoadPromise;
+    settingsLoadPromise=(async()=>{
+      try{
+        await loadSettings();
+        window.pickylaV18Session3AdminReady=true;
+      }catch(e){
+        console.error(e);const list=$('v18s3GalleryList');if(list)list.innerHTML=`<div class="empty">${esc(e.message)}</div>`;
+      }
+    })();
+    try{return await settingsLoadPromise;}finally{settingsLoadPromise=null;}
+  }
   async function install(){
     if(typeof db==='undefined'||!$('shareToolsSection'))return false;
     ensureUi();installEvents();installFeaturedTestimonials();
-    try{await loadSettings();window.pickylaV18Session3AdminReady=true;}catch(e){console.error(e);const list=$('v18s3GalleryList');if(list)list.innerHTML=`<div class="empty">${esc(e.message)}</div>`;}
+    if(!window.__pickylaS3AdminActiveBound){
+      window.__pickylaS3AdminActiveBound=true;
+      window.addEventListener('pickyla:admin-active',()=>setTimeout(loadAdminContent,80));
+    }
+    if(adminActive())setTimeout(loadAdminContent,0);
     return true;
   }
   let tries=0,t=setInterval(async()=>{tries++;if(await install()||tries>40)clearInterval(t);},250);
