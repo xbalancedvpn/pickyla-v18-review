@@ -36,5 +36,7 @@
     q('v18s5GalleryToggle').onclick=()=>{expanded=!expanded;sync();};new MutationObserver(()=>setTimeout(sync,0)).observe(list,{childList:true});sync();
   }
   function install(){installQuickActions();installFinanceSnapshot();installGalleryCompact();window.addEventListener('pickyla:admin-active',()=>scheduleFinance(900));if(window.__pickylaAdminActiveReady)scheduleFinance(900);window.pickylaV18Session5Ready=true;}
-  let tries=0,t=setInterval(()=>{tries++;if(typeof db!=='undefined'&&q('paymentDashboardSection')){clearInterval(t);install();}else if(tries>40)clearInterval(t);},250);
+  function activate(){if(typeof db!=='undefined'&&q('paymentDashboardSection'))install();}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
