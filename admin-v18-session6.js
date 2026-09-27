@@ -64,5 +64,7 @@
     q('detailedReportType')?.addEventListener('change',()=>setTimeout(repairDetailedReportLayout,0));window.addEventListener('resize',repairDetailedReportLayout);window.pickylaV18Session6Ready=true;
   }
 
-  let tries=0,t=setInterval(()=>{tries++;if(q('adminView')&&q('clientList')){clearInterval(t);install();}else if(tries>50)clearInterval(t);},200);
+  function activate(){if(q('adminView')&&q('clientList'))install();}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
