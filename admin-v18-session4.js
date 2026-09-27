@@ -32,9 +32,37 @@
       ${sectionHtml('v18s4CompletedSection','COMPLETED','Completed Sessions','Fully settled completed sessions. Latest three are shown by default.','v18s4CompletedList','v18s4CompletedCount','v18s4CompletedToggle')}`;
     payments.before(wrap);q('collectionAlertSection')?.classList.add('v18s4-legacy-hidden');
     q('v18s4ManualBookingBtn').onclick=()=>{q('bookingToolsSection')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>q('bookingDate')?.focus(),500);};
-    [['upcoming','v18s4UpcomingToggle'],['past','v18s4PastToggle'],['payment','v18s4PaymentToggle'],['completed','v18s4CompletedToggle']].forEach(([key,id])=>q(id).onclick=()=>{state.expanded[key]=!state.expanded[key];renderAll();});
+    const sectionByKind={upcoming:'v18s4UpcomingSection',past:'v18s4PastSection',payment:'v18s4PaymentSection',completed:'v18s4CompletedSection'};
+    [['upcoming','v18s4UpcomingToggle'],['past','v18s4PastToggle'],['payment','v18s4PaymentToggle'],['completed','v18s4CompletedToggle']].forEach(([key,id])=>q(id).onclick=()=>{const collapsing=state.expanded[key];state.expanded[key]=!state.expanded[key];renderAll();if(collapsing)setTimeout(()=>q(sectionByKind[key])?.scrollIntoView({behavior:'smooth',block:'start'}),60);});
     addNavLinks();
   }
+  function installBlockHourPicker(){
+    const form=q('blockForm');if(!form||q('v18s4BlockHourPicker'))return;
+    const grid=form.querySelector('.form-grid');if(!grid)return;
+    const wrap=document.createElement('div');wrap.id='v18s4BlockHourPicker';wrap.className='v18s4-block-picker';
+    wrap.innerHTML='<div class="v18s4-block-picker-head"><div><strong>Select continuous hours</strong><small>Tap the first hour, then tap the last hour. All hours in between will be blocked.</small></div><span id="v18s4BlockRangeLabel">8:00 AM – 12:00 MN</span></div><div class="v18s4-block-hours"></div>';
+    grid.insertAdjacentElement('afterend',wrap);
+    const hours=wrap.querySelector('.v18s4-block-hours');
+    for(let h=8;h<24;h++){const b=document.createElement('button');b.type='button';b.dataset.blockHour=String(h);b.textContent=hour(h);hours.appendChild(b);}
+    let pickStart=null,pickEnd=null;
+    const syncFromSelects=()=>{
+      const s=Number(q('blockStart')?.value||8),e=Number(q('blockEnd')?.value||s+1);
+      wrap.querySelectorAll('[data-block-hour]').forEach(btn=>{const h=Number(btn.dataset.blockHour);btn.classList.toggle('selected',h>=s&&h<e);btn.classList.toggle('range-start',h===s);btn.classList.toggle('range-end',h===e-1);});
+      const label=q('v18s4BlockRangeLabel');if(label)label.textContent=`${hour(s)} – ${hour(e)} • ${Math.max(1,e-s)} hour${e-s===1?'':'s'}`;
+    };
+    hours.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-block-hour]');if(!btn)return;const h=Number(btn.dataset.blockHour);
+      if(pickStart===null||pickEnd!==null){pickStart=h;pickEnd=null;q('blockStart').value=String(h);q('blockEnd').value=String(Math.min(24,h+1));}
+      else if(h<pickStart){pickStart=h;q('blockStart').value=String(h);q('blockEnd').value=String(Math.min(24,h+1));}
+      else{pickEnd=h;q('blockEnd').value=String(Math.min(24,h+1));}
+      syncFromSelects();
+    });
+    q('blockStart')?.addEventListener('change',()=>{pickStart=null;pickEnd=null;syncFromSelects();});
+    q('blockEnd')?.addEventListener('change',()=>{pickStart=null;pickEnd=null;syncFromSelects();});
+    form.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>{pickStart=null;pickEnd=null;syncFromSelects();},0)));
+    syncFromSelects();
+  }
+
   function installManualPaymentFields(){
     const amount=q('amountPaid');if(!amount||q('bookingPaymentMethod'))return;
     const label=amount.closest('label');if(!label)return;
@@ -134,7 +162,7 @@
     const qb=q('quickBookingForm');if(qb&&qb.onsubmit){const old=qb.onsubmit;qb.onsubmit=async function(e){await old.call(this,e);setTimeout(load,350);};}
     const priorSet=typeof setV17SessionStatus==='function'?setV17SessionStatus:null;if(priorSet)setV17SessionStatus=async function(...args){const r=await priorSet(...args);await load();return r;};
   }
-  function install(){installSections();installManualPaymentFields();wrapRefreshes();window.addEventListener('pickyla:admin-active',()=>scheduleLoad(350));if(window.__pickylaAdminActiveReady)scheduleLoad(350);window.pickylaV18Session4Ready=true;}
+  function install(){installSections();installManualPaymentFields();installBlockHourPicker();wrapRefreshes();window.addEventListener('pickyla:admin-active',()=>scheduleLoad(350));if(window.__pickylaAdminActiveReady)scheduleLoad(350);window.pickylaV18Session4Ready=true;}
   function activate(){if(typeof db!=='undefined'&&q('todayCommandSection')&&q('quickBookingForm'))install();}
   window.addEventListener('pickyla:admin-active',activate,{once:true});
   if(window.__pickylaAdminActiveReady)activate();
