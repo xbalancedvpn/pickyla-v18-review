@@ -154,7 +154,7 @@
     x.fillStyle='#111';x.fillRect(0,H-82,W,82);x.fillStyle='#f5c400';x.font='900 22px Arial';x.fillText('PICKYLA',70,H-36);
     x.textAlign='right';x.fillStyle='#bbb';x.font='500 17px Arial';x.fillText(`${assessments.length} assessment${assessments.length===1?'':'s'} • Player-safe card`,W-70,H-36);
     x.textAlign='center';x.fillStyle='#9b9b9b';x.font='600 16px Arial';x.fillText('© 2026 XBALANCED DIGITAL SOLUTIONS',W/2,H-36);x.textAlign='left';
-    S2.progressDataUrl=cv.toDataURL('image/png');S2.progressFilename=`pickyla-player-progress-${slug(client.full_name)}-${current.assessment_date||dateKey()}.png`;
+    S2.progressDataUrl=cv.toDataURL('image/png');S2.progressFilename=`pickyla-player-progress-card-${slug(client.full_name)}-${current.assessment_date||dateKey()}.png`;
     q('progressCardPreview').src=S2.progressDataUrl;q('progressCardDialog')?.showModal();
   }
   function installProgressCard(){
