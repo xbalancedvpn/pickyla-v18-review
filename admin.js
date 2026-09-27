@@ -1,6 +1,6 @@
 const SUPABASE_URL="https://khpwkjbkplnxrixozwqh.supabase.co",SUPABASE_PUBLISHABLE_KEY="sb_publishable_MInlyVQO8pLPOm9_rLaUlQ_OCl-jwyn";const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);const $=id=>document.getElementById(id),loginView=$("loginView"),adminView=$("adminView"),adminDate=$("adminDate"),slotList=$("slotList"),bookingGroups=$("bookingGroups"),editDialog=$("editDialog");let rowsByHour=new Map(),bookingsForDay=[],parsedInquiry=null,incomeChart=null,mixChart=null;const pad=n=>String(n).padStart(2,"0"),dateStr=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,todayStr=()=>dateStr(new Date()),hourName=h=>h===24?"12:00 MN":`${h%12||12}:00 ${h<12?"AM":"PM"}`,hourLabel=h=>`${hourName(h)} – ${hourName(h+1)}`,peso=n=>"₱"+Number(n||0).toLocaleString("en-PH",{maximumFractionDigits:2}),standardRate=n=>n===1?400:n<=3?300:250,coachingType=n=>n===1?"1-on-1":n<=3?"Partners (2–3 Players)":"Group (4–8 Players)",dateRange=(a,b)=>{const out=[],d=new Date(a+"T00:00:00"),e=new Date(b+"T00:00:00");while(d<=e){out.push(dateStr(d));d.setDate(d.getDate()+1);}return out;};function toast(s){const e=$("toast");e.textContent=s;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200);}function fillHours(sel,a,b){sel.innerHTML="";for(let h=a;h<=b;h++){const o=document.createElement("option");o.value=h;o.textContent=hourName(h);sel.appendChild(o);}}fillHours($("blockStart"),8,23);fillHours($("blockEnd"),9,24);$("blockEnd").value="24";
 async function authRefresh(){const {data:{session}}=await db.auth.getSession();if(session){loginView.classList.add("hidden");adminView.classList.remove("hidden");const t=todayStr();adminDate.value||=t;$("bookingDate").value||=t;$("blockFromDate").value||=t;$("blockToDate").value||=t;adminCalendarView=new Date();adminCalendarView.setDate(1);await Promise.all([loadDay(),loadBookingAvailability(),loadReports(),loadAdminCalendar(),loadInquiries()]);}else{adminView.classList.add("hidden");loginView.classList.remove("hidden");}}
-$("loginForm").onsubmit=async e=>{e.preventDefault();$("loginError").textContent="";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)$("loginError").textContent=error.message;else authRefresh();};$("stagingSignupBtn").onclick=async()=>{const email=$("email").value.trim(),password=$("password").value,msg=$("signupMessage");$("loginError").textContent="";msg.textContent="";if(!email||!password){msg.textContent="Enter the email and password you want to use for staging first.";return;}if(password.length<6){msg.textContent="Use a password with at least 6 characters.";return;}const {data,error}=await db.auth.signUp({email,password});if(error){msg.textContent=error.message;return;}msg.textContent=data.session?"Staging admin created and signed in.":"Account created. Check your email for the Supabase confirmation link, then return here and sign in.";if(data.session)authRefresh();};$("logoutBtn").onclick=async()=>{await db.auth.signOut();authRefresh();};
+$("loginForm").onsubmit=async e=>{e.preventDefault();$("loginError").textContent="";window.pickylaDiag?.("sign-in request","auth");const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){$("loginError").textContent=error.message;window.pickylaDiag?.("sign-in error • "+error.message,"error");}};$("stagingSignupBtn").onclick=async()=>{const email=$("email").value.trim(),password=$("password").value,msg=$("signupMessage");$("loginError").textContent="";msg.textContent="";if(!email||!password){msg.textContent="Enter the email and password you want to use for staging first.";return;}if(password.length<6){msg.textContent="Use a password with at least 6 characters.";return;}const {data,error}=await db.auth.signUp({email,password});if(error){msg.textContent=error.message;return;}msg.textContent=data.session?"Staging admin created and signed in.":"Account created. Check your email for the Supabase confirmation link, then return here and sign in.";if(data.session)authRefresh();};$("logoutBtn").onclick=async()=>{await db.auth.signOut();authRefresh();};
 async function fetchSlots(d){const {data,error}=await db.from("schedule_slots").select("id,slot_date,start_hour,status,client_name,contact,coaching_type,rate,notes,booking_id").eq("slot_date",d).order("start_hour");if(error)throw error;return data||[];}async function fetchBookings(d){const {data,error}=await db.from("bookings").select("*").eq("session_date",d).neq("status","cancelled").order("start_hour");if(error)throw error;return data||[];}
 async function loadDay(){if(!adminDate.value)return;slotList.innerHTML='<div class="empty">Loading…</div>';bookingGroups.innerHTML='<div class="empty">Loading…</div>';try{const [slots,books]=await Promise.all([fetchSlots(adminDate.value),fetchBookings(adminDate.value)]);rowsByHour=new Map(slots.map(r=>[Number(r.start_hour),r]));bookingsForDay=books;renderSlots();renderBookingGroups();}catch(e){slotList.innerHTML=`<div class="empty">${e.message}</div>`;}}adminDate.onchange=async()=>{await loadDay();await loadAdminCalendar();};
 function renderSlots(){slotList.innerHTML="";let c={available:0,booked:0,unavailable:0};for(let h=8;h<24;h++){const r=rowsByHour.get(h)||{status:"available"};c[r.status]++;const div=document.createElement("div");div.className="admin-slot";const label=r.status==="booked"?(r.client_name||"Booked session"):r.status==="unavailable"?"Blocked time":"Open";div.innerHTML=`<div class="time">${hourLabel(h)}</div><span class="badge ${r.status}">${r.status}</span><div class="client-mini">${label}</div><button class="edit-btn">Edit</button>`;div.querySelector("button").onclick=()=>openEditor(h);slotList.appendChild(div);}$("availableCount").textContent=c.available;$("bookedCount").textContent=c.booked;$("unavailableCount").textContent=c.unavailable;}
@@ -328,16 +328,21 @@ async function v18GetFreshAdminSession(){
   return session;
 }
 async function v18RunAdminLoaders(jobs){
-  const run=()=>Promise.allSettled(jobs.map(([label,fn])=>v18AdminLoaderWithTimeout(label,fn)));
-  let results=await run();
-  const failed=results.map((r,i)=>r.status==="rejected"?i:-1).filter(i=>i>=0);
-  failed.forEach(i=>console.warn("Pickyla loader failed:",jobs[i][0],results[i].reason));
-  if(failed.length){
-    await new Promise(resolve=>setTimeout(resolve,1400));
-    const retryJobs=failed.map(i=>jobs[i]);
-    const retry=await Promise.allSettled(retryJobs.map(([label,fn])=>v18AdminLoaderWithTimeout(label,fn,10000)));
-    retry.forEach((r,n)=>{if(r.status==="rejected")console.warn("Pickyla loader retry failed:",retryJobs[n][0],r.reason);});
+  const results=[];
+  for(const [label,fn] of jobs){
+    window.pickylaDiag?.("loader start "+label,"boot");
+    try{
+      await v18AdminLoaderWithTimeout(label,fn,10000);
+      results.push({label,status:"fulfilled"});
+      window.pickylaDiag?.("loader done "+label,"boot");
+    }catch(reason){
+      results.push({label,status:"rejected",reason});
+      console.warn("Pickyla loader failed:",label,reason);
+      window.pickylaDiag?.("loader failed "+label+" • "+(reason?.message||reason),"error");
+    }
+    await new Promise(resolve=>setTimeout(resolve,60));
   }
+  return results;
 }
 async function authRefresh(){
   if(window.__pickylaAdminBootRunning){window.__pickylaAdminBootQueued=true;return;}
@@ -350,11 +355,20 @@ async function authRefresh(){
       const drawer=$("adminMenuDrawer");if(!drawer||!drawer.classList.contains("open")){document.body.style.overflow="";document.documentElement.style.overflow="";}
       const t=todayStr();adminDate.value||=t;$("bookingDate").value||=t;$("blockFromDate").value||=t;$("blockToDate").value||=t;adminCalendarView=new Date();adminCalendarView.setDate(1);initDetailedReportDates();
       const jobs=[
-        ["Programs",()=>loadV17Programs()],["Players",()=>loadV17Clients()],["Day",()=>loadDay()],["Availability",()=>loadBookingAvailability()],
-        ["Reports",()=>loadReports()],["Calendar",()=>loadAdminCalendar()],["Inquiries",()=>loadInquiries()],["Collection alerts",()=>loadCollectionAlerts()],
-        ["Today",()=>loadTodayCommandCenter()],["Payments",()=>loadPaymentDashboard()],["Testimonials",()=>loadV17BTestimonials()]
+        ["Reports",()=>loadReports()],
+        ["Day",()=>loadDay()],
+        ["Availability",()=>loadBookingAvailability()],
+        ["Calendar",()=>loadAdminCalendar()],
+        ["Today",()=>loadTodayCommandCenter()],
+        ["Payments",()=>loadPaymentDashboard()],
+        ["Inquiries",()=>loadInquiries()],
+        ["Collection alerts",()=>loadCollectionAlerts()],
+        ["Players",()=>loadV17Clients()],
+        ["Programs",()=>loadV17Programs()],
+        ["Testimonials",()=>loadV17BTestimonials()]
       ];
       await v18RunAdminLoaders(jobs);
+      window.__pickylaAdminActiveReady=true;
       window.dispatchEvent(new CustomEvent("pickyla:admin-active"));
       v18ResetAdminToTop();
     }else{
@@ -379,7 +393,10 @@ async function authRefresh(){
 if(!window.__pickylaAuthRecoveryBound){
   window.__pickylaAuthRecoveryBound=true;
   db.auth.onAuthStateChange((event)=>{
-    if(["INITIAL_SESSION","SIGNED_IN","TOKEN_REFRESHED","USER_UPDATED"].includes(event))setTimeout(()=>authRefresh(),0);
+    window.pickylaDiag?.("auth event "+event,"auth");
+    // Initial page boot already calls authRefresh(). Do not launch a second full
+    // dashboard load for INITIAL_SESSION/TOKEN_REFRESHED/USER_UPDATED.
+    if(event==="SIGNED_IN"&&loginView&&!loginView.classList.contains("hidden"))setTimeout(()=>authRefresh(),0);
     if(event==="SIGNED_OUT")setTimeout(()=>authRefresh(),0);
   });
 }
