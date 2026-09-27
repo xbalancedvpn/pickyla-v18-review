@@ -229,9 +229,9 @@
     ensureUi();installEvents();installFeaturedTestimonials();
     if(!window.__pickylaS3AdminActiveBound){
       window.__pickylaS3AdminActiveBound=true;
-      window.addEventListener('pickyla:admin-active',()=>setTimeout(loadAdminContent,80));
+      window.addEventListener('pickyla:admin-active',()=>setTimeout(loadAdminContent,1500));
     }
-    if(adminActive())setTimeout(loadAdminContent,0);
+    if(window.__pickylaAdminActiveReady)setTimeout(loadAdminContent,1500);
     return true;
   }
   let tries=0,t=setInterval(async()=>{tries++;if(await install()||tries>40)clearInterval(t);},250);
