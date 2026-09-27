@@ -33,7 +33,7 @@
   function installGalleryCompact(){
     const list=q('v18s3GalleryList');if(!list||q('v18s5GalleryTools'))return;const tools=document.createElement('div');tools.id='v18s5GalleryTools';tools.className='v18s5-gallery-tools';tools.innerHTML='<span id="v18s5GalleryCount">0 photos</span><button id="v18s5GalleryToggle" class="secondary" type="button">Show All</button>';list.before(tools);list.classList.add('v18s5-gallery-compact');let expanded=false;
     const sync=()=>{const cards=[...list.children].filter(x=>!x.classList.contains('empty'));q('v18s5GalleryCount').textContent=`${cards.length} photo${cards.length===1?'':'s'}`;const btn=q('v18s5GalleryToggle');btn.hidden=cards.length<=5;btn.textContent=expanded?'Show Less':`Show All (${cards.length})`;list.classList.toggle('v18s5-gallery-expanded',expanded);};
-    q('v18s5GalleryToggle').onclick=()=>{expanded=!expanded;sync();};new MutationObserver(()=>setTimeout(sync,0)).observe(list,{childList:true});sync();
+    q('v18s5GalleryToggle').onclick=()=>{const collapsing=expanded;expanded=!expanded;sync();if(collapsing)setTimeout(()=>{const target=list.closest('section')||list;target.scrollIntoView({behavior:'smooth',block:'start'});},60);};new MutationObserver(()=>setTimeout(sync,0)).observe(list,{childList:true});sync();
   }
   function install(){installQuickActions();installFinanceSnapshot();installGalleryCompact();window.addEventListener('pickyla:admin-active',()=>scheduleFinance(900));if(window.__pickylaAdminActiveReady)scheduleFinance(900);window.pickylaV18Session5Ready=true;}
   function activate(){if(typeof db!=='undefined'&&q('paymentDashboardSection'))install();}
