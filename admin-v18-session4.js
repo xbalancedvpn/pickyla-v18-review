@@ -7,7 +7,22 @@
   const todayKey=()=>ymd(new Date());
   const hour=h=>{h=Number(h);if(h===24)return'12:00 MN';return `${h%12||12}:00 ${h<12?'AM':'PM'}`;};
   const cancelled=b=>b.status==='cancelled'||['client_cancelled','coach_cancelled'].includes(b.session_status);
-  let state={rows:[],paid:new Map(),expanded:{upcoming:false,past:false,payment:false,completed:false}};
+  let state={rows:[],paid:new Map(),inquiryCourts:new Map(),inquiryCourtsByTime:new Map(),expanded:{upcoming:false,past:false,payment:false,completed:false}};
+  const courtPlaceholder=v=>!String(v||'').trim()||/^(court\s+not\s+decided\s+yet|not\s+decided\s+yet|not\s+specified|to\s+be\s+confirmed|tbd)$/i.test(String(v||'').trim());
+  const normName=v=>String(v||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const courtKey=(date,start,end,name)=>`${date||''}|${Number(start)}|${Number(end)}|${normName(name)}`;
+  const courtTimeKey=(date,start,end)=>`${date||''}|${Number(start)}|${Number(end)}`;
+  function inquiryCourtValue(i){
+    const direct=String(i?.court_name||'').trim();if(!courtPlaceholder(direct))return direct;
+    const m=String(i?.source_text||'').match(/^Court:\s*(.+)$/im),parsed=String(m?.[1]||'').trim();
+    return courtPlaceholder(parsed)?'':parsed;
+  }
+  function effectiveCourt(b){
+    const direct=String(b?.court_name||'').trim();if(!courtPlaceholder(direct))return direct;
+    const exact=state.inquiryCourts.get(courtKey(b?.session_date,b?.start_hour,b?.end_hour,b?.client_name));if(exact)return exact;
+    const byTime=state.inquiryCourtsByTime.get(courtTimeKey(b?.session_date,b?.start_hour,b?.end_hour));
+    return byTime?.length===1?byTime[0]:'';
+  }
   let loadPromise=null,refreshTimer=null;
   function adminActive(){const v=q('adminView');return !!v&&!v.classList.contains('hidden');}
   function scheduleLoad(delay=120){if(!adminActive())return;clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(adminActive())load();},delay);}
@@ -94,8 +109,8 @@
       try{
         const {error}=await db.from('bookings').update({court_name:court}).eq('id',courtContext.id);
         if(error)return alert(error.message);
-        const row=state.rows.find(x=>String(x.id)===String(courtContext.id));if(row)row.court_name=court;
-        courtContext.court_name=court;dialog.close();toast('Court updated');
+        const row=state.rows.find(x=>String(x.id)===String(courtContext.id));if(row){row.court_name=court;row._display_court=court;}
+        courtContext.court_name=court;courtContext._display_court=court;dialog.close();toast('Court updated');
         renderAll();
         const jobs=[];
         if(typeof loadDay==='function')jobs.push(loadDay());
@@ -107,7 +122,7 @@
   }
   function openCourtEditor(b){
     ensureCourtDialog();courtContext=b;
-    const known=['NANOMOLY','DINK VALLEY','HOMECOURT','CASA PLAY'],current=String(b.court_name||'').trim(),upper=current.toUpperCase(),isKnown=known.includes(upper);
+    const known=['NANOMOLY','DINK VALLEY','HOMECOURT','CASA PLAY'],current=effectiveCourt(b),upper=current.toUpperCase(),isKnown=known.includes(upper);
     q('v18s4CourtTitle').textContent=current?'Change Court':'Set Court';
     q('v18s4CourtMeta').textContent=`${b.client_name} • ${b.session_date} • ${hour(b.start_hour)}–${hour(b.end_hour)}`;
     q('v18s4CourtSelect').value=current?(isKnown?upper:'OTHERS'):'';
@@ -124,9 +139,14 @@
     installSections();installManualPaymentFields();if(typeof db==='undefined'||!adminActive())return;
     if(loadPromise)return loadPromise;
     loadPromise=(async()=>{
-      const {data,error}=await db.from('bookings').select('*').order('session_date',{ascending:false}).order('start_hour',{ascending:true}).limit(700);
+      const [{data,error},{data:inq,error:inqError}]=await Promise.all([
+        db.from('bookings').select('*').order('session_date',{ascending:false}).order('start_hour',{ascending:true}).limit(700),
+        db.from('inquiries').select('id,client_name,preferred_date,start_hour,end_hour,court_name,source_text,created_at').order('created_at',{ascending:false}).limit(700)
+      ]);
       if(error){['v18s4UpcomingList','v18s4PastList','v18s4PaymentList','v18s4CompletedList'].forEach(id=>{if(q(id))q(id).innerHTML=`<div class="empty">${esc(error.message)}</div>`;});return;}
-      state.rows=data||[];state.paid=new Map();const ids=state.rows.map(x=>x.id);
+      state.inquiryCourts=new Map();state.inquiryCourtsByTime=new Map();
+      if(!inqError)(inq||[]).forEach(i=>{const court=inquiryCourtValue(i);if(!court)return;const exact=courtKey(i.preferred_date,i.start_hour,i.end_hour,i.client_name),time=courtTimeKey(i.preferred_date,i.start_hour,i.end_hour);if(!state.inquiryCourts.has(exact))state.inquiryCourts.set(exact,court);const list=state.inquiryCourtsByTime.get(time)||[];if(!list.includes(court))list.push(court);state.inquiryCourtsByTime.set(time,list);});
+      state.rows=(data||[]).map(b=>({...b,_display_court:effectiveCourt(b)}));state.paid=new Map();const ids=state.rows.map(x=>x.id);
       if(ids.length){const {data:p,error:pe}=await db.from('booking_payments').select('booking_id,amount').in('booking_id',ids);if(!pe)(p||[]).forEach(x=>state.paid.set(x.booking_id,(state.paid.get(x.booking_id)||0)+Number(x.amount||0)));else state.rows.forEach(b=>state.paid.set(b.id,Number(b.amount_paid||0)));}
       renderAll();
     })();
@@ -148,14 +168,14 @@
   }
   function emptyText(kind){return{upcoming:'No upcoming confirmed bookings.',past:'No past sessions need completion.',payment:'No completed sessions need payment follow-up.',completed:'No fully settled completed sessions yet.'}[kind];}
   function cardHtml(b,kind){
-    const p=paymentState2(b),court=b.court_name||'Not specified',date=new Date(String(b.session_date)+'T00:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}),status=kind==='past'?'Needs Closing':kind==='payment'?'Completed • Balance Due':kind==='completed'?'Completed':'Scheduled';
+    const p=paymentState2(b),court=effectiveCourt(b)||'Court not decided yet',date=new Date(String(b.session_date)+'T00:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}),status=kind==='past'?'Needs Closing':kind==='payment'?'Completed • Balance Due':kind==='completed'?'Completed':'Scheduled';
     const paymentLine=b.client_program_id?'Program package payment tracked separately':`${p.status} • Collected ${money(p.paid)} • Balance ${money(p.balance)}`;
-    let actions=`<button type="button" data-act="profile" data-id="${b.id}">Profile</button><button type="button" data-act="card" data-id="${b.id}">Confirmation Card</button><button type="button" data-act="court" data-id="${b.id}">${b.court_name?'Change Court':'Set Court'}</button>`;
+    let actions=`<button type="button" data-act="profile" data-id="${b.id}">Profile</button><button type="button" data-act="card" data-id="${b.id}">Confirmation Card</button><button type="button" data-act="court" data-id="${b.id}">${effectiveCourt(b)?'Change Court':'Set Court'}</button>`;
     if((kind==='upcoming'||kind==='payment')&&p.balance>.001&&!b.client_program_id)actions+=`<button type="button" class="primary" data-act="pay" data-id="${b.id}">${kind==='payment'?'Record Remaining Payment':'Record Payment'}</button>`;
     if(kind==='past')actions+=`<button type="button" class="v18s4-complete" data-act="status" data-status="completed" data-id="${b.id}">Completed</button><button type="button" data-act="status" data-status="no_show" data-id="${b.id}">No Show</button><button type="button" data-act="status" data-status="client_cancelled" data-id="${b.id}">Player Cancelled</button><button type="button" data-act="status" data-status="coach_cancelled" data-id="${b.id}">Coach Cancelled</button>`;
     return `<article class="v18s4-booking-card"><div class="v18s4-card-top"><div><span class="v18s4-date">${esc(date)} • ${hour(b.start_hour)}–${hour(b.end_hour)}</span><h3>${esc(b.client_name)}</h3><p>${Number(b.participant_count||1)} player${Number(b.participant_count||1)===1?'':'s'} • ${esc(b.coaching_type||'Coaching')}<br><strong>Court:</strong> ${esc(court)}</p></div><span class="v18s4-state ${kind}">${esc(status)}</span></div><div class="v18s4-money"><strong>${money(p.total)}</strong><span>${esc(paymentLine)}</span></div><div class="v18s4-actions">${actions}</div></article>`;
   }
-  function bindActions(list,rows){const map=new Map(rows.map(b=>[String(b.id),b]));list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=async()=>{const b=map.get(btn.dataset.id);if(!b)return;if(btn.dataset.act==='profile'){if(b.client_id&&typeof openV17Client==='function')return openV17Client(b.client_id);alert('No linked player profile for this booking yet.');return;}if(btn.dataset.act==='card'){if(typeof openConfirmationCard==='function')return openConfirmationCard(b);return;}if(btn.dataset.act==='court'){openCourtEditor(b);return;}if(btn.dataset.act==='pay'){if(typeof updatePayment==='function')return updatePayment(b);return;}if(btn.dataset.act==='status'&&typeof setV17SessionStatus==='function'){await setV17SessionStatus(b,btn.dataset.status);await load();}});}
+  function bindActions(list,rows){const map=new Map(rows.map(b=>[String(b.id),b]));list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=async()=>{const b=map.get(btn.dataset.id);if(!b)return;if(btn.dataset.act==='profile'){if(b.client_id&&typeof openV17Client==='function')return openV17Client(b.client_id);alert('No linked player profile for this booking yet.');return;}if(btn.dataset.act==='card'){if(typeof openConfirmationCard==='function')return openConfirmationCard({...b,court_name:effectiveCourt(b)||null});return;}if(btn.dataset.act==='court'){openCourtEditor(b);return;}if(btn.dataset.act==='pay'){if(typeof updatePayment==='function')return updatePayment(b);return;}if(btn.dataset.act==='status'&&typeof setV17SessionStatus==='function'){await setV17SessionStatus(b,btn.dataset.status);await load();}});}
   function wrapRefreshes(){
     if(window.__pickylaS4Wrapped)return;window.__pickylaS4Wrapped=true;
     const pf=q('paymentForm');if(pf&&pf.onsubmit){const old=pf.onsubmit;pf.onsubmit=async function(e){await old.call(this,e);setTimeout(load,250);};}
