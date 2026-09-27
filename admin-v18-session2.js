@@ -258,5 +258,7 @@
     installAssessment();installProgressCard();installConfirmation();installWeekly();
     window.pickylaV18Session2Ready=true;return true;
   }
-  let n=0,t=setInterval(()=>{n++;if(install()||n>40)clearInterval(t);},250);
+  function activate(){install();}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
