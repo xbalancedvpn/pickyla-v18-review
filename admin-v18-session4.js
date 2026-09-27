@@ -42,6 +42,53 @@
     q('bookingPaymentDate').value=todayKey();
     const date=q('bookingDate');if(date&&!date.closest('label')?.querySelector('.v18s4-past-help')){const small=document.createElement('small');small.className='v18s4-past-help';small.textContent='Past dates are allowed for missed entries. Close the session afterward so Earned Income reflects the actual session date.';date.closest('label').appendChild(small);}
   }
+  let courtContext=null;
+  function ensureCourtDialog(){
+    if(q('v18s4CourtDialog'))return;
+    const dialog=document.createElement('dialog');dialog.id='v18s4CourtDialog';
+    dialog.innerHTML=`<form id="v18s4CourtForm" class="editor">
+      <div class="editor-head"><div><span class="eyebrow">BOOKING COURT</span><h2 id="v18s4CourtTitle">Set Court</h2><p class="panel-note" id="v18s4CourtMeta">Choose where this session will be played.</p></div><button type="button" class="close-btn" id="v18s4CourtClose">×</button></div>
+      <div class="form-grid">
+        <label class="full">Court<select id="v18s4CourtSelect" required><option value="">Select court</option><option value="NANOMOLY">NANOMOLY</option><option value="DINK VALLEY">DINK VALLEY</option><option value="HOMECOURT">HOMECOURT</option><option value="CASA PLAY">CASA PLAY</option><option value="OTHERS">OTHERS</option></select></label>
+        <label class="full hidden" id="v18s4CourtOtherWrap">Other court<input id="v18s4CourtOther" maxlength="120" placeholder="Enter court name"></label>
+      </div>
+      <div class="editor-actions"><button type="button" class="soft-danger" id="v18s4CourtCancel">Cancel</button><button type="submit" class="primary" id="v18s4CourtSave">Save Court</button></div>
+    </form>`;
+    document.body.appendChild(dialog);
+    const close=()=>{courtContext=null;dialog.close();};
+    q('v18s4CourtClose').onclick=close;q('v18s4CourtCancel').onclick=close;
+    q('v18s4CourtSelect').onchange=()=>{const other=q('v18s4CourtSelect').value==='OTHERS';q('v18s4CourtOtherWrap').classList.toggle('hidden',!other);if(!other)q('v18s4CourtOther').value='';};
+    q('v18s4CourtForm').onsubmit=async e=>{
+      e.preventDefault();if(!courtContext)return;
+      const choice=q('v18s4CourtSelect').value,court=choice==='OTHERS'?String(q('v18s4CourtOther').value||'').trim():choice;
+      if(!court)return alert('Select a court. If you choose Others, enter the court name.');
+      const save=q('v18s4CourtSave');save.disabled=true;save.textContent='Saving…';
+      try{
+        const {error}=await db.from('bookings').update({court_name:court}).eq('id',courtContext.id);
+        if(error)return alert(error.message);
+        const row=state.rows.find(x=>String(x.id)===String(courtContext.id));if(row)row.court_name=court;
+        courtContext.court_name=court;dialog.close();toast('Court updated');
+        renderAll();
+        const jobs=[];
+        if(typeof loadDay==='function')jobs.push(loadDay());
+        if(typeof loadTodayCommandCenter==='function')jobs.push(loadTodayCommandCenter());
+        if(typeof loadV17Clients==='function')jobs.push(loadV17Clients());
+        await Promise.allSettled(jobs);
+      }finally{courtContext=null;save.disabled=false;save.textContent='Save Court';}
+    };
+  }
+  function openCourtEditor(b){
+    ensureCourtDialog();courtContext=b;
+    const known=['NANOMOLY','DINK VALLEY','HOMECOURT','CASA PLAY'],current=String(b.court_name||'').trim(),upper=current.toUpperCase(),isKnown=known.includes(upper);
+    q('v18s4CourtTitle').textContent=current?'Change Court':'Set Court';
+    q('v18s4CourtMeta').textContent=`${b.client_name} • ${b.session_date} • ${hour(b.start_hour)}–${hour(b.end_hour)}`;
+    q('v18s4CourtSelect').value=current?(isKnown?upper:'OTHERS'):'';
+    q('v18s4CourtOtherWrap').classList.toggle('hidden',!current||isKnown);
+    q('v18s4CourtOther').value=current&&!isKnown?current:'';
+    q('v18s4CourtDialog').showModal();
+  }
+  window.pickylaOpenCourtEditor=openCourtEditor;
+
   function paidFor(b){return Number(state.paid.get(b.id)||0);}
   function paymentState2(b){const total=Number(b.total_amount||0),paid=paidFor(b),balance=Math.max(0,total-paid);return{total,paid,balance,status:balance<=.001?'Paid':paid>0?'Partial':'Unpaid'};}
   function endMoment(b){const d=new Date(String(b.session_date)+'T00:00:00');d.setHours(Number(b.end_hour||0),0,0,0);return d;}
@@ -75,12 +122,12 @@
   function cardHtml(b,kind){
     const p=paymentState2(b),court=b.court_name||'Not specified',date=new Date(String(b.session_date)+'T00:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}),status=kind==='past'?'Needs Closing':kind==='payment'?'Completed • Balance Due':kind==='completed'?'Completed':'Scheduled';
     const paymentLine=b.client_program_id?'Program package payment tracked separately':`${p.status} • Collected ${money(p.paid)} • Balance ${money(p.balance)}`;
-    let actions=`<button type="button" data-act="profile" data-id="${b.id}">Profile</button><button type="button" data-act="card" data-id="${b.id}">Confirmation Card</button>`;
+    let actions=`<button type="button" data-act="profile" data-id="${b.id}">Profile</button><button type="button" data-act="card" data-id="${b.id}">Confirmation Card</button><button type="button" data-act="court" data-id="${b.id}">${b.court_name?'Change Court':'Set Court'}</button>`;
     if((kind==='upcoming'||kind==='payment')&&p.balance>.001&&!b.client_program_id)actions+=`<button type="button" class="primary" data-act="pay" data-id="${b.id}">${kind==='payment'?'Record Remaining Payment':'Record Payment'}</button>`;
     if(kind==='past')actions+=`<button type="button" class="v18s4-complete" data-act="status" data-status="completed" data-id="${b.id}">Completed</button><button type="button" data-act="status" data-status="no_show" data-id="${b.id}">No Show</button><button type="button" data-act="status" data-status="client_cancelled" data-id="${b.id}">Player Cancelled</button><button type="button" data-act="status" data-status="coach_cancelled" data-id="${b.id}">Coach Cancelled</button>`;
     return `<article class="v18s4-booking-card"><div class="v18s4-card-top"><div><span class="v18s4-date">${esc(date)} • ${hour(b.start_hour)}–${hour(b.end_hour)}</span><h3>${esc(b.client_name)}</h3><p>${Number(b.participant_count||1)} player${Number(b.participant_count||1)===1?'':'s'} • ${esc(b.coaching_type||'Coaching')}<br><strong>Court:</strong> ${esc(court)}</p></div><span class="v18s4-state ${kind}">${esc(status)}</span></div><div class="v18s4-money"><strong>${money(p.total)}</strong><span>${esc(paymentLine)}</span></div><div class="v18s4-actions">${actions}</div></article>`;
   }
-  function bindActions(list,rows){const map=new Map(rows.map(b=>[String(b.id),b]));list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=async()=>{const b=map.get(btn.dataset.id);if(!b)return;if(btn.dataset.act==='profile'){if(b.client_id&&typeof openV17Client==='function')return openV17Client(b.client_id);alert('No linked player profile for this booking yet.');return;}if(btn.dataset.act==='card'){if(typeof openConfirmationCard==='function')return openConfirmationCard(b);return;}if(btn.dataset.act==='pay'){if(typeof updatePayment==='function')return updatePayment(b);return;}if(btn.dataset.act==='status'&&typeof setV17SessionStatus==='function'){await setV17SessionStatus(b,btn.dataset.status);await load();}});}
+  function bindActions(list,rows){const map=new Map(rows.map(b=>[String(b.id),b]));list.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=async()=>{const b=map.get(btn.dataset.id);if(!b)return;if(btn.dataset.act==='profile'){if(b.client_id&&typeof openV17Client==='function')return openV17Client(b.client_id);alert('No linked player profile for this booking yet.');return;}if(btn.dataset.act==='card'){if(typeof openConfirmationCard==='function')return openConfirmationCard(b);return;}if(btn.dataset.act==='court'){openCourtEditor(b);return;}if(btn.dataset.act==='pay'){if(typeof updatePayment==='function')return updatePayment(b);return;}if(btn.dataset.act==='status'&&typeof setV17SessionStatus==='function'){await setV17SessionStatus(b,btn.dataset.status);await load();}});}
   function wrapRefreshes(){
     if(window.__pickylaS4Wrapped)return;window.__pickylaS4Wrapped=true;
     const pf=q('paymentForm');if(pf&&pf.onsubmit){const old=pf.onsubmit;pf.onsubmit=async function(e){await old.call(this,e);setTimeout(load,250);};}
