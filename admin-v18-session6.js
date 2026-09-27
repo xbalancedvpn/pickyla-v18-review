@@ -16,7 +16,7 @@
       btn.setAttribute('aria-expanded',String(expanded));
       btn.setAttribute('aria-label',expanded?'Show fewer '+opts.label:'Show all '+opts.label);
     };
-    btn.onclick=()=>{expanded=!expanded;apply();};
+    btn.onclick=()=>{const collapsing=expanded;expanded=!expanded;apply();if(collapsing)setTimeout(()=>{const target=list.closest('section')||list;target.scrollIntoView({behavior:'smooth',block:'start'});},60);};
     new MutationObserver(()=>{expanded=false;setTimeout(apply,0);}).observe(list,{childList:true});
     if(opts.listId==='clientList') q('clientSearch')?.addEventListener('input',()=>{expanded=false;setTimeout(apply,80);});
     apply();
