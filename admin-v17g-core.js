@@ -9,6 +9,7 @@
   const quick=document.createElement('div');quick.className='v17g-quickbar';quick.innerHTML=`<div class="v17g-quick-actions">
     <button type="button" class="primary" data-jump="todayCommandSection">Today</button>
     <button type="button" data-jump="quickBookingForm">+ New Booking</button>
+    <button type="button" data-jump="blockForm">Block Sched</button>
     <button type="button" data-jump="inquirySection">Inquiries</button>
     <button type="button" data-jump="clientHubSection">Players</button>
     <button type="button" data-jump="programHubSection">Programs</button>
