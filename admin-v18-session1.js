@@ -205,10 +205,15 @@
     };
   }
 
+  function adminActive(){const v=$p('adminView');return !!v&&!v.classList.contains('hidden');}
   function install(){
     if(typeof db==='undefined' || typeof loadV17Clients!=='function' || !document.querySelector('.v17g-client-maintenance-dialog'))return false;
     installCreateOverride();installProfileEnhancement();renamePlayerLanguage();enhanceSearch();
-    if(typeof loadV17Clients==='function')loadV17Clients();
+    if(!window.__pickylaS1AdminActiveBound){
+      window.__pickylaS1AdminActiveBound=true;
+      window.addEventListener('pickyla:admin-active',()=>{if(adminActive()&&typeof loadV17Clients==='function')loadV17Clients();});
+    }
+    if(adminActive()&&typeof loadV17Clients==='function')loadV17Clients();
     window.pickylaV18Session1Ready=true;
     return true;
   }
