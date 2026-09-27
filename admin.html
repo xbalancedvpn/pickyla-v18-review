@@ -39,15 +39,26 @@
     const isSupa=!!u&&u.hostname.includes("supabase.co");
     const label=isSupa?u.pathname:"";
     const started=performance.now();
-    if(isSupa)window.pickylaDiag("START "+label,"fetch");
+    let timer=null,controller=null,nextInit=init;
+    if(isSupa){
+      window.pickylaDiag("START "+label,"fetch");
+      controller=new AbortController();
+      const originalSignal=init?.signal||(typeof input!=="string"?input?.signal:null);
+      if(originalSignal){
+        if(originalSignal.aborted)controller.abort(originalSignal.reason);
+        else originalSignal.addEventListener("abort",()=>controller.abort(originalSignal.reason),{once:true});
+      }
+      nextInit={...(init||{}),signal:controller.signal};
+      timer=setTimeout(()=>controller.abort(new DOMException("Supabase request exceeded 12 seconds","TimeoutError")),12000);
+    }
     try{
-      const res=await rawFetch(input,init);
+      const res=await rawFetch(input,nextInit);
       if(isSupa)window.pickylaDiag("END "+label+" • HTTP "+res.status+" • "+Math.round(performance.now()-started)+"ms","fetch");
       return res;
     }catch(e){
-      if(isSupa)window.pickylaDiag("FAIL "+label+" • "+(e?.message||e),"error");
+      if(isSupa)window.pickylaDiag("FAIL "+label+" • "+(e?.name||"Error")+" • "+(e?.message||e),"error");
       throw e;
-    }
+    }finally{if(timer)clearTimeout(timer);}
   };
   try{
     new PerformanceObserver(list=>{for(const e of list.getEntries())if(e.duration>=250)window.pickylaDiag("long task "+Math.round(e.duration)+"ms","perf");}).observe({entryTypes:["longtask"]});
@@ -292,4 +303,4 @@
   <div class="editor-actions"><button id="cancelProgressCard" type="button" class="soft-danger">Close</button><button id="downloadProgressCard" type="button" class="primary">Download PNG</button></div>
 </div></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=18court18"></script><script src="admin-v17f.js?v=17f-player1"></script><script src="admin-v17g.js?v=17g-active1"></script><script src="admin-v18-session1.js?v=18s1-loginfix1"></script><script src="admin-v18-session2.js?v=18s2-credit1"></script><script src="admin-v18-weeknav.js?v=18week-credit1"></script><script src="admin-v18-session3.js?v=18s3-loginfix1"></script><script src="admin-v18-session4.js?v=18s4-loginfix1"></script><script src="admin-v18-session5.js?v=18s5-loginfix1"></script><script src="admin-v18-session6.js?v=18s6-report1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=18court19"></script><script src="admin-v17f.js?v=17f-player1"></script><script src="admin-v17g.js?v=17g-active1"></script><script src="admin-v18-session1.js?v=18s1-bootfix2"></script><script src="admin-v18-session2.js?v=18s2-credit1"></script><script src="admin-v18-weeknav.js?v=18week-credit1"></script><script src="admin-v18-session3.js?v=18s3-bootfix2"></script><script src="admin-v18-session4.js?v=18s4-bootfix2"></script><script src="admin-v18-session5.js?v=18s5-bootfix2"></script><script src="admin-v18-session6.js?v=18s6-report1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
