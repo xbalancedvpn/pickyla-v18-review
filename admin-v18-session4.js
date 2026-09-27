@@ -8,6 +8,9 @@
   const hour=h=>{h=Number(h);if(h===24)return'12:00 MN';return `${h%12||12}:00 ${h<12?'AM':'PM'}`;};
   const cancelled=b=>b.status==='cancelled'||['client_cancelled','coach_cancelled'].includes(b.session_status);
   let state={rows:[],paid:new Map(),expanded:{upcoming:false,past:false,payment:false,completed:false}};
+  let loadPromise=null,refreshTimer=null;
+  function adminActive(){const v=q('adminView');return !!v&&!v.classList.contains('hidden');}
+  function scheduleLoad(delay=120){if(!adminActive())return;clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>{if(adminActive())load();},delay);}
 
   function addNavLinks(){
     const nav=document.querySelector('.admin-menu-links');if(!nav||nav.querySelector('[href="#v18s4UpcomingSection"]'))return;
@@ -43,12 +46,16 @@
   function paymentState2(b){const total=Number(b.total_amount||0),paid=paidFor(b),balance=Math.max(0,total-paid);return{total,paid,balance,status:balance<=.001?'Paid':paid>0?'Partial':'Unpaid'};}
   function endMoment(b){const d=new Date(String(b.session_date)+'T00:00:00');d.setHours(Number(b.end_hour||0),0,0,0);return d;}
   async function load(){
-    installSections();installManualPaymentFields();if(typeof db==='undefined')return;
-    const {data,error}=await db.from('bookings').select('*').order('session_date',{ascending:false}).order('start_hour',{ascending:true}).limit(700);
-    if(error){['v18s4UpcomingList','v18s4PastList','v18s4PaymentList','v18s4CompletedList'].forEach(id=>{if(q(id))q(id).innerHTML=`<div class="empty">${esc(error.message)}</div>`;});return;}
-    state.rows=data||[];state.paid=new Map();const ids=state.rows.map(x=>x.id);
-    if(ids.length){const {data:p,error:pe}=await db.from('booking_payments').select('booking_id,amount').in('booking_id',ids);if(!pe)(p||[]).forEach(x=>state.paid.set(x.booking_id,(state.paid.get(x.booking_id)||0)+Number(x.amount||0)));else state.rows.forEach(b=>state.paid.set(b.id,Number(b.amount_paid||0)));}
-    renderAll();
+    installSections();installManualPaymentFields();if(typeof db==='undefined'||!adminActive())return;
+    if(loadPromise)return loadPromise;
+    loadPromise=(async()=>{
+      const {data,error}=await db.from('bookings').select('*').order('session_date',{ascending:false}).order('start_hour',{ascending:true}).limit(700);
+      if(error){['v18s4UpcomingList','v18s4PastList','v18s4PaymentList','v18s4CompletedList'].forEach(id=>{if(q(id))q(id).innerHTML=`<div class="empty">${esc(error.message)}</div>`;});return;}
+      state.rows=data||[];state.paid=new Map();const ids=state.rows.map(x=>x.id);
+      if(ids.length){const {data:p,error:pe}=await db.from('booking_payments').select('booking_id,amount').in('booking_id',ids);if(!pe)(p||[]).forEach(x=>state.paid.set(x.booking_id,(state.paid.get(x.booking_id)||0)+Number(x.amount||0)));else state.rows.forEach(b=>state.paid.set(b.id,Number(b.amount_paid||0)));}
+      renderAll();
+    })();
+    try{return await loadPromise;}finally{loadPromise=null;}
   }
   function buckets(){
     const today=todayKey(),active=state.rows.filter(b=>!cancelled(b)),scheduled=active.filter(b=>(b.session_status||'scheduled')==='scheduled');
@@ -80,6 +87,6 @@
     const qb=q('quickBookingForm');if(qb&&qb.onsubmit){const old=qb.onsubmit;qb.onsubmit=async function(e){await old.call(this,e);setTimeout(load,350);};}
     const priorSet=typeof setV17SessionStatus==='function'?setV17SessionStatus:null;if(priorSet)setV17SessionStatus=async function(...args){const r=await priorSet(...args);await load();return r;};
   }
-  function install(){installSections();installManualPaymentFields();wrapRefreshes();load();window.addEventListener('focus',()=>setTimeout(load,120));document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(load,120);});window.pickylaV18Session4Ready=true;}
+  function install(){installSections();installManualPaymentFields();wrapRefreshes();if(adminActive())scheduleLoad(0);window.addEventListener('pickyla:admin-active',()=>scheduleLoad(80));window.pickylaV18Session4Ready=true;}
   let tries=0,t=setInterval(()=>{tries++;if(typeof db!=='undefined'&&q('todayCommandSection')&&q('quickBookingForm')){clearInterval(t);install();}else if(tries>40)clearInterval(t);},250);
 })();
