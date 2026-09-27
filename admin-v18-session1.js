@@ -215,5 +215,7 @@
     return true;
   }
 
-  let tries=0;const timer=setInterval(()=>{tries++;if(install()||tries>30)clearInterval(timer);},250);
+  function activate(){install();}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
