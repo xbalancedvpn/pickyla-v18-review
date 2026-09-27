@@ -9,6 +9,61 @@
   <link rel="manifest" href="site.webmanifest">
 <link rel="stylesheet" href="admin-v18-session1.css?v=18s1"><link rel="stylesheet" href="admin-v18-login.css?v=18login"><link rel="stylesheet" href="admin-v18-session2.css?v=18s2"><link rel="stylesheet" href="admin-v18-session3.css?v=18s3"><link rel="stylesheet" href="admin-v18-session4.css?v=18s4"><link rel="stylesheet" href="admin-v18-session5.css?v=18s5"><link rel="stylesheet" href="admin-v18-session6.css?v=18s6-report1"></head><body>
 <div id="toast" class="toast"></div>
+<script>
+(function(){
+  const logs=[];
+  function clean(v){return String(v??"").replace(/\s+/g," ").slice(0,180);}
+  function render(){
+    const text=logs.slice(-8).map(x=>x.time+"  "+x.msg).join("\n");
+    ["v18DebugLogin","v18DebugAdmin"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=text||"Waiting for diagnostic events…";});
+  }
+  window.pickylaDiag=function(msg,kind){
+    logs.push({time:new Date().toLocaleTimeString("en-PH",{hour12:false}),msg:(kind?kind.toUpperCase()+" • ":"")+clean(msg)});
+    if(logs.length>30)logs.shift();
+    render();
+  };
+  window.pickylaDiag("HTML diagnostic boot","boot");
+  window.addEventListener("error",e=>window.pickylaDiag((e.message||"Script error")+" @ "+(e.filename?e.filename.split("/").pop():"unknown")+":"+(e.lineno||0),"error"));
+  window.addEventListener("unhandledrejection",e=>window.pickylaDiag("Unhandled promise: "+(e.reason?.message||e.reason||"unknown"),"error"));
+  window.addEventListener("pageshow",e=>window.pickylaDiag("pageshow persisted="+!!e.persisted,"life"));
+  window.addEventListener("load",()=>window.pickylaDiag("window load complete","life"));
+  window.addEventListener("online",()=>window.pickylaDiag("browser online","net"));
+  window.addEventListener("offline",()=>window.pickylaDiag("browser offline","net"));
+  window.addEventListener("focus",()=>window.pickylaDiag("window focus","life"));
+  window.addEventListener("blur",()=>window.pickylaDiag("window blur","life"));
+  document.addEventListener("visibilitychange",()=>window.pickylaDiag("visibility="+document.visibilityState,"life"));
+  const rawFetch=window.fetch.bind(window);
+  window.fetch=async function(input,init){
+    const raw=typeof input==="string"?input:input?.url||"";
+    let u=null;try{u=new URL(raw,location.href);}catch(_e){}
+    const isSupa=!!u&&u.hostname.includes("supabase.co");
+    const label=isSupa?u.pathname:"";
+    const started=performance.now();
+    if(isSupa)window.pickylaDiag("START "+label,"fetch");
+    try{
+      const res=await rawFetch(input,init);
+      if(isSupa)window.pickylaDiag("END "+label+" • HTTP "+res.status+" • "+Math.round(performance.now()-started)+"ms","fetch");
+      return res;
+    }catch(e){
+      if(isSupa)window.pickylaDiag("FAIL "+label+" • "+(e?.message||e),"error");
+      throw e;
+    }
+  };
+  try{
+    new PerformanceObserver(list=>{for(const e of list.getEntries())if(e.duration>=250)window.pickylaDiag("long task "+Math.round(e.duration)+"ms","perf");}).observe({entryTypes:["longtask"]});
+  }catch(_e){}
+  document.addEventListener("DOMContentLoaded",()=>{
+    render();
+    const email=document.getElementById("email"),password=document.getElementById("password"),form=document.getElementById("loginForm");
+    email?.addEventListener("focus",()=>window.pickylaDiag("email focused","ui"));
+    email?.addEventListener("input",()=>window.pickylaDiag("email typing","ui"));
+    password?.addEventListener("focus",()=>window.pickylaDiag("password focused","ui"));
+    password?.addEventListener("input",()=>window.pickylaDiag("password typing","ui"));
+    form?.addEventListener("submit",()=>window.pickylaDiag("login submitted","ui"),true);
+    window.pickylaDiag("DOMContentLoaded • online="+navigator.onLine,"boot");
+  });
+})();
+</script>
 <section id="loginView" class="auth-page">
   <div class="pickyla-login-env">STAGING • PICKYLA v18</div>
   <div class="pickyla-login-shell">
@@ -20,6 +75,7 @@
       <span class="eyebrow">COACH ADMIN • STAGING</span>
       <h1>Welcome to PICKYLA Admin</h1>
       <p>Manage bookings, players, schedules, and coaching sessions in one place.</p>
+      <div style="margin:10px 0 12px;padding:9px 10px;border:1px dashed #c7b65a;border-radius:12px;background:#fffdf4"><strong style="display:block;font-size:11px;margin-bottom:5px">TEMP DIAGNOSTIC</strong><pre id="v18DebugLogin" style="margin:0;white-space:pre-wrap;font:600 10px/1.35 monospace;color:#5c4b12;max-height:110px;overflow:auto">Waiting for diagnostic events…</pre></div>
       <form id="loginForm">
         <label>Email address<input id="email" type="email" autocomplete="email" placeholder="Enter your email" required></label>
         <label>Password<input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required></label>
@@ -42,6 +98,7 @@
 <div id="adminMenuBackdrop" class="admin-menu-backdrop hidden"></div>
 <aside id="adminMenuDrawer" class="admin-menu-drawer" aria-hidden="true"><div class="admin-menu-head"><div><span class="eyebrow">QUICK NAVIGATION</span><h2>Admin Menu</h2></div><button id="adminMenuClose" type="button" aria-label="Close menu">×</button></div><nav class="admin-menu-links"><a href="#adminDashboardTop">Dashboard</a><a href="#todayCommandSection">Today</a><a href="#paymentDashboardSection">Payments</a><a href="#adminReportsSection">Reports</a><a href="#weeklyShareSection">Weekly Schedule</a><a href="#shareToolsSection">Marketing & Testimonials</a><a href="#clientHubSection">Players</a><a href="#programHubSection">Programs</a><a href="#bookingToolsSection">Booking Tools</a><a href="#inquirySection">Inquiries</a><a href="#calendarSection">Calendar</a><a href="#daySection">Day View</a></nav></aside><main class="admin-wrap">
 <section class="welcome" id="adminDashboardTop"><span class="eyebrow">DASHBOARD</span><h1>Coach operations, players & progress</h1><p>Run today’s sessions, track players and programs, monitor progress, manage collections, and keep the schedule moving.</p></section><div id="v18DataStatus" style="margin:10px 0 14px;padding:10px 14px;border:1px solid #e6dfbd;border-radius:14px;background:#fffdf4;font-size:13px;font-weight:800;color:#6d5b17">DIAGNOSTIC • waiting for staging session…</div>
+<div style="margin:0 0 14px;padding:9px 10px;border:1px dashed #c7b65a;border-radius:12px;background:#fffdf4"><strong style="display:block;font-size:11px;margin-bottom:5px">TEMP DIAGNOSTIC</strong><pre id="v18DebugAdmin" style="margin:0;white-space:pre-wrap;font:600 10px/1.35 monospace;color:#5c4b12;max-height:130px;overflow:auto">Waiting for diagnostic events…</pre></div>
 <section class="report-grid"><article class="report-card"><span>Today</span><strong id="todayGross">₱0</strong><small id="todayMeta">0 sessions • ₱0 collected</small></article><article class="report-card"><span>This Week</span><strong id="weekGross">₱0</strong><small id="weekMeta">0 sessions • ₱0 collected</small></article><article class="report-card"><span>This Month</span><strong id="monthGross">₱0</strong><small id="monthMeta">0 sessions • ₱0 collected</small></article><article class="report-card"><span>All Time</span><strong id="allGross">₱0</strong><small id="allMeta">0 sessions • ₱0 collected</small></article></section>
 <section class="mini-metrics"><div><strong id="monthHours">0</strong><span>Hours this month</span></div><div><strong id="pendingCount">0</strong><span>Pending inquiries</span></div><div><strong id="collectionDueCount">0</strong><span>Collection alerts</span></div><div><strong id="cancelCount">0</strong><span>Cancelled bookings</span></div></section>
 
@@ -235,4 +292,4 @@
   <div class="editor-actions"><button id="cancelProgressCard" type="button" class="soft-danger">Close</button><button id="downloadProgressCard" type="button" class="primary">Download PNG</button></div>
 </div></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=18court17"></script><script src="admin-v17f.js?v=17f-player1"></script><script src="admin-v17g.js?v=17g-active1"></script><script src="admin-v18-session1.js?v=18s1-loginfix1"></script><script src="admin-v18-session2.js?v=18s2-credit1"></script><script src="admin-v18-weeknav.js?v=18week-credit1"></script><script src="admin-v18-session3.js?v=18s3-loginfix1"></script><script src="admin-v18-session4.js?v=18s4-loginfix1"></script><script src="admin-v18-session5.js?v=18s5-loginfix1"></script><script src="admin-v18-session6.js?v=18s6-report1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=18court18"></script><script src="admin-v17f.js?v=17f-player1"></script><script src="admin-v17g.js?v=17g-active1"></script><script src="admin-v18-session1.js?v=18s1-loginfix1"></script><script src="admin-v18-session2.js?v=18s2-credit1"></script><script src="admin-v18-weeknav.js?v=18week-credit1"></script><script src="admin-v18-session3.js?v=18s3-loginfix1"></script><script src="admin-v18-session4.js?v=18s4-loginfix1"></script><script src="admin-v18-session5.js?v=18s5-loginfix1"></script><script src="admin-v18-session6.js?v=18s6-report1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
