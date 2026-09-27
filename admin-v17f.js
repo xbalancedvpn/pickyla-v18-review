@@ -47,13 +47,15 @@
   $f('refreshAdminReminder')?.addEventListener('click',()=>loadAdminReminder(false));
   reminderPref?.addEventListener('change',()=>localStorage.setItem(REMINDER_KEY,reminderPref.checked?'1':'0'));
 
-  async function maybeAutoReminder(){
-    const {data:{session}}=await db.auth.getSession();if(!session)return;
-    const total=await loadAdminReminder(false);
-    if(total>0&&reminderEnabled()&&!reminderShownThisVisit){reminderShownThisVisit=true;setTimeout(()=>{if(reminderDialog&&!reminderDialog.open)reminderDialog.showModal();},250);}
+  // v19 diagnostic isolation: do not auto-open the reminder during authentication.
+  // The core admin boot dispatches pickyla:admin-active only after its startup
+  // loaders have finished, so reminder queries are deferred until then.
+  async function refreshReminderAfterAdminReady(){
+    if(!$f('adminView')||$f('adminView').classList.contains('hidden'))return;
+    try{await loadAdminReminder(false);}catch(e){console.warn('Pickyla reminder refresh failed:',e);}
   }
-  db.auth.onAuthStateChange((_event,session)=>{if(session)setTimeout(maybeAutoReminder,500);});
-  setTimeout(maybeAutoReminder,900);
+  window.addEventListener('pickyla:admin-active',()=>setTimeout(refreshReminderAfterAdminReady,1800),{once:true});
+  if(window.__pickylaAdminActiveReady)setTimeout(refreshReminderAfterAdminReady,1800);
   setInterval(()=>{if($f('adminView')&&!$f('adminView').classList.contains('hidden'))loadAdminReminder(false);},60000);
 
   // Link the public self-assessment after an inquiry is successfully converted to a confirmed booking.
