@@ -285,6 +285,7 @@ async function authRefresh(){
     const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError)throw sessionError;
     if(session){
       loginView.classList.add("hidden");adminView.classList.remove("hidden");
+      v18ResetAdminToTop();
       const drawer=$("adminMenuDrawer");if(!drawer||!drawer.classList.contains("open")){document.body.style.overflow="";document.documentElement.style.overflow="";}
       const t=todayStr();adminDate.value||=t;$("bookingDate").value||=t;$("blockFromDate").value||=t;$("blockToDate").value||=t;adminCalendarView=new Date();adminCalendarView.setDate(1);initDetailedReportDates();
       const jobs=[
@@ -380,10 +381,23 @@ function v17eSetMenu(open){const drawer=$("adminMenuDrawer"),backdrop=$("adminMe
 if($("adminMenuBtn"))$("adminMenuBtn").onclick=()=>v17eSetMenu(true);if($("adminMenuClose"))$("adminMenuClose").onclick=()=>v17eSetMenu(false);if($("adminMenuBackdrop"))$("adminMenuBackdrop").onclick=()=>v17eSetMenu(false);document.querySelectorAll(".admin-menu-links a").forEach(a=>a.addEventListener("click",()=>v17eSetMenu(false)));document.addEventListener("keydown",e=>{if(e.key==="Escape")v17eSetMenu(false);});
 
 // Defensive mobile scroll recovery after refresh / bfcache restore.
-function v18RecoverAdminScroll(){
-  const drawer=$("adminMenuDrawer");
-  if(!drawer||!drawer.classList.contains("open")){document.body.style.overflow="";document.documentElement.style.overflow="";}
+// Chrome on Android can restore a stale Y position while the admin dashboard is
+// rebuilding, leaving the sticky header visible over an apparently blank page.
+if("scrollRestoration" in history)history.scrollRestoration="manual";
+function v18ResetAdminToTop(){
+  if(location.hash)return;
+  window.scrollTo(0,0);
+  requestAnimationFrame(()=>window.scrollTo(0,0));
+  setTimeout(()=>window.scrollTo(0,0),250);
 }
-window.addEventListener("pageshow",()=>setTimeout(v18RecoverAdminScroll,0));
-window.addEventListener("load",()=>setTimeout(v18RecoverAdminScroll,0));
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(v18RecoverAdminScroll,0);});
+function v18RecoverAdminScroll(resetPosition=false){
+  const drawer=$("adminMenuDrawer");
+  if(!drawer||!drawer.classList.contains("open")){
+    document.body.style.overflow="";
+    document.documentElement.style.overflow="";
+  }
+  if(resetPosition&&adminView&&!adminView.classList.contains("hidden"))v18ResetAdminToTop();
+}
+window.addEventListener("pageshow",()=>setTimeout(()=>v18RecoverAdminScroll(true),0));
+window.addEventListener("load",()=>setTimeout(()=>v18RecoverAdminScroll(true),0));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(()=>v18RecoverAdminScroll(false),0);});
