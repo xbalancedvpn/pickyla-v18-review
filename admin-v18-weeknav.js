@@ -51,5 +51,7 @@
     let share=$("v18s2ShareWeekly");if(!share&&save){share=document.createElement("button");share.id="v18s2ShareWeekly";share.type="button";share.className="secondary";share.textContent="Share";save.after(share);}if(share)share.onclick=sharePng;
     window.pickylaV18MondayWeekReady=true;return true;
   }
-  let tries=0;const timer=setInterval(()=>{tries++;if(install()||tries>40)clearInterval(timer);},250);
+  function activate(){install();}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
