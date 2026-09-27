@@ -98,7 +98,7 @@ async function loadCollectionAlerts(){
 // Booking save now writes initial collection to the payment ledger.
 $("quickBookingForm").onsubmit=async e=>{e.preventDefault();const d=$("bookingDate").value,s=Number($("bookingStart").value),en=Number($("bookingEnd").value),n=Number($("participantCount").value),r=Number($("ratePerPerson").value),initial=Number($("amountPaid").value||0),total=(en-s)*n*r;if(!d||!s||!en||en<=s)return alert("Choose a valid date/time range.");if(initial>total)return alert("Initial payment cannot be higher than the booking total.");const bad=await conflictsFor(d,s,en);if(bad.length)return alert("Schedule conflict:\n"+bad.join("\n"));const client=$("bookingClient").value.trim();const summary=`Confirm booking?\n\n${client}\n${d} • ${hourName(s)}–${hourName(en)}\n${n} player(s) • ${peso(r)}/person/hr\nTotal: ${peso(total)}${initial?`\nInitial payment: ${peso(initial)}`:""}`;if(!confirm(summary))return;const book={session_date:d,start_hour:s,end_hour:en,client_name:client,contact:$("bookingContact").value.trim()||null,participant_count:n,coaching_type:coachingType(n),rate_mode:$("rateMode").value,rate_per_person:r,total_amount:total,amount_paid:0,notes:$("bookingNotes").value.trim()||null,status:"confirmed"};const {data:b,error:e1}=await db.from("bookings").insert(book).select().single();if(e1)return alert(e1.message);const slotRows=[];for(let h=s;h<en;h++)slotRows.push({slot_date:d,start_hour:h,status:"booked",client_name:book.client_name,contact:book.contact,coaching_type:book.coaching_type,rate:r,notes:book.notes,booking_id:b.id});const {error:e2}=await db.from("schedule_slots").insert(slotRows);if(e2){await db.from("bookings").delete().eq("id",b.id);return alert(e2.message);}if(initial>0){const {error:pe}=await db.from("booking_payments").insert({booking_id:b.id,amount:initial,paid_at:$("bookingPaymentDate")?.value||todayStr(),payment_method:$("bookingPaymentMethod")?.value||"Cash",note:"Initial payment recorded when booking was created",source:"booking_create"});if(pe){await db.from("schedule_slots").delete().eq("booking_id",b.id);await db.from("bookings").delete().eq("id",b.id);return alert(`Booking was not saved because the payment ledger is not ready. Run the v16 migration first.\n\n${pe.message}`);}}toast("Booking saved");adminDate.value=d;$("bookingClient").value="";$("bookingContact").value="";$("bookingNotes").value="";$("amountPaid").value="0";await Promise.all([loadDay(),loadBookingAvailability(),loadReports(),loadAdminCalendar(),loadInquiries(),loadCollectionAlerts()]);};
 
-async function loadReports(){const {data,error}=await db.from("bookings").select("session_date,start_hour,end_hour,total_amount,amount_paid,status,participant_count");if(error)return;const rows=data||[],active=rows.filter(x=>x.status!=="cancelled"),today=new Date(),t=todayStr(),weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);const ms=new Date(today.getFullYear(),today.getMonth(),1),me=new Date(today.getFullYear(),today.getMonth()+1,0);const calc=(arr,p)=>{const gross=arr.reduce((a,x)=>a+Number(x.total_amount||0),0),paid=arr.reduce((a,x)=>a+Number(x.amount_paid||0),0);$(p+"Gross").textContent=peso(gross);$(p+"Meta").textContent=`${arr.length} session(s) • ${peso(paid)} collected`;};calc(active.filter(x=>x.session_date===t),"today");calc(active.filter(x=>x.session_date>=dateStr(weekStart)&&x.session_date<=dateStr(weekEnd)),"week");const monthRows=active.filter(x=>x.session_date>=dateStr(ms)&&x.session_date<=dateStr(me));calc(monthRows,"month");calc(active,"all");$("monthHours").textContent=monthRows.reduce((a,x)=>a+(Number(x.end_hour)-Number(x.start_hour)),0);$("cancelCount").textContent=rows.filter(x=>x.status==="cancelled").length;renderCharts(active);}
+async function loadReports(){const {data,error}=await db.from("bookings").select("session_date,start_hour,end_hour,total_amount,amount_paid,status,participant_count");if(error){["todayMeta","weekMeta","monthMeta","allMeta"].forEach(id=>{const el=$(id);if(el)el.textContent="Retrying live data…";});throw error;}const rows=data||[],active=rows.filter(x=>x.status!=="cancelled"),today=new Date(),t=todayStr(),weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);const ms=new Date(today.getFullYear(),today.getMonth(),1),me=new Date(today.getFullYear(),today.getMonth()+1,0);const calc=(arr,p)=>{const gross=arr.reduce((a,x)=>a+Number(x.total_amount||0),0),paid=arr.reduce((a,x)=>a+Number(x.amount_paid||0),0);$(p+"Gross").textContent=peso(gross);$(p+"Meta").textContent=`${arr.length} session(s) • ${peso(paid)} collected`;};calc(active.filter(x=>x.session_date===t),"today");calc(active.filter(x=>x.session_date>=dateStr(weekStart)&&x.session_date<=dateStr(weekEnd)),"week");const monthRows=active.filter(x=>x.session_date>=dateStr(ms)&&x.session_date<=dateStr(me));calc(monthRows,"month");calc(active,"all");$("monthHours").textContent=monthRows.reduce((a,x)=>a+(Number(x.end_hour)-Number(x.start_hour)),0);$("cancelCount").textContent=rows.filter(x=>x.status==="cancelled").length;renderCharts(active);}
 function renderCharts(active){const labels=[],values=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=dateStr(d);labels.push(d.toLocaleDateString("en-PH",{month:"short",day:"numeric"}));values.push(active.filter(x=>x.session_date===ds).reduce((a,x)=>a+Number(x.total_amount||0),0));}const groups=[1,2,3,4,5].map(n=>active.filter(x=>Number(x.participant_count)===n).length);if(incomeChart)incomeChart.destroy();if(mixChart)mixChart.destroy();incomeChart=new Chart($("incomeChart"),{type:"bar",data:{labels,datasets:[{label:"Booked value",data:values,backgroundColor:"#f5c400",borderColor:"#111111",borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});mixChart=new Chart($("mixChart"),{type:"doughnut",data:{labels:["1 player","2 players","3 players","4 players","5 players"],datasets:[{data:groups,backgroundColor:["#111111","#f5c400","#d8a800","#9d9d9d","#e8dfbd"]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}}}});}
 
 function initDetailedReportDates(){if(!$("reportFrom"))return;const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);$("reportFrom").value||=dateStr(start);$("reportTo").value||=todayStr();}
@@ -280,9 +280,43 @@ $("quickBookingForm").onsubmit=async e=>{
 // Keep old whole-booking cancellation compatible with the new session status.
 async function v17LegacyCancelSync(){/* reserved */}
 
+function v18AdminLoaderWithTimeout(label,fn,ms=12000){
+  return Promise.race([
+    Promise.resolve().then(fn),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+" timed out")),ms))
+  ]);
+}
+async function v18GetFreshAdminSession(){
+  const first=await db.auth.getSession();
+  if(first.error)throw first.error;
+  let session=first.data?.session||null;
+  if(!session)return null;
+  const expiresMs=Number(session.expires_at||0)*1000;
+  const shouldRefresh=!expiresMs||expiresMs-Date.now()<90000;
+  if(shouldRefresh){
+    const refreshed=await db.auth.refreshSession();
+    if(!refreshed.error&&refreshed.data?.session)session=refreshed.data.session;
+    else if(expiresMs&&expiresMs<=Date.now())throw(refreshed.error||new Error("Admin session expired"));
+  }
+  return session;
+}
+async function v18RunAdminLoaders(jobs){
+  const run=()=>Promise.allSettled(jobs.map(([label,fn])=>v18AdminLoaderWithTimeout(label,fn)));
+  let results=await run();
+  const failed=results.map((r,i)=>r.status==="rejected"?i:-1).filter(i=>i>=0);
+  failed.forEach(i=>console.warn("Pickyla loader failed:",jobs[i][0],results[i].reason));
+  if(failed.length){
+    await new Promise(resolve=>setTimeout(resolve,1400));
+    const retryJobs=failed.map(i=>jobs[i]);
+    const retry=await Promise.allSettled(retryJobs.map(([label,fn])=>v18AdminLoaderWithTimeout(label,fn,10000)));
+    retry.forEach((r,n)=>{if(r.status==="rejected")console.warn("Pickyla loader retry failed:",retryJobs[n][0],r.reason);});
+  }
+}
 async function authRefresh(){
+  if(window.__pickylaAdminBootRunning){window.__pickylaAdminBootQueued=true;return;}
+  window.__pickylaAdminBootRunning=true;
   try{
-    const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError)throw sessionError;
+    const session=await v18GetFreshAdminSession();
     if(session){
       loginView.classList.add("hidden");adminView.classList.remove("hidden");
       v18ResetAdminToTop();
@@ -293,11 +327,33 @@ async function authRefresh(){
         ["Reports",()=>loadReports()],["Calendar",()=>loadAdminCalendar()],["Inquiries",()=>loadInquiries()],["Collection alerts",()=>loadCollectionAlerts()],
         ["Today",()=>loadTodayCommandCenter()],["Payments",()=>loadPaymentDashboard()],["Testimonials",()=>loadV17BTestimonials()]
       ];
-      const results=await Promise.allSettled(jobs.map(([,fn])=>Promise.resolve().then(fn)));
-      results.forEach((r,i)=>{if(r.status==="rejected")console.warn("Pickyla loader failed:",jobs[i][0],r.reason);});
+      await v18RunAdminLoaders(jobs);
       v18ResetAdminToTop();
-    }else{adminView.classList.add("hidden");loginView.classList.remove("hidden");document.body.style.overflow="";document.documentElement.style.overflow="";}
-  }catch(e){console.error("Pickyla admin refresh failed:",e);document.body.style.overflow="";document.documentElement.style.overflow="";}
+    }else{
+      adminView.classList.add("hidden");loginView.classList.remove("hidden");
+      document.body.style.overflow="";document.documentElement.style.overflow="";
+    }
+  }catch(e){
+    console.error("Pickyla admin refresh failed:",e);
+    document.body.style.overflow="";document.documentElement.style.overflow="";
+    if(adminView&&!adminView.classList.contains("hidden")){
+      ["todayMeta","weekMeta","monthMeta","allMeta"].forEach(id=>{const el=$(id);if(el)el.textContent="Reconnecting to live data…";});
+      setTimeout(()=>authRefresh(),1800);
+    }
+  }finally{
+    window.__pickylaAdminBootRunning=false;
+    if(window.__pickylaAdminBootQueued){
+      window.__pickylaAdminBootQueued=false;
+      setTimeout(()=>authRefresh(),80);
+    }
+  }
+}
+if(!window.__pickylaAuthRecoveryBound){
+  window.__pickylaAuthRecoveryBound=true;
+  db.auth.onAuthStateChange((event)=>{
+    if(["INITIAL_SESSION","SIGNED_IN","TOKEN_REFRESHED","USER_UPDATED"].includes(event))setTimeout(()=>authRefresh(),0);
+    if(event==="SIGNED_OUT")setTimeout(()=>authRefresh(),0);
+  });
 }
 
 // Refresh operational data while the dashboard is open.
