@@ -295,6 +295,7 @@ async function authRefresh(){
       ];
       const results=await Promise.allSettled(jobs.map(([,fn])=>Promise.resolve().then(fn)));
       results.forEach((r,i)=>{if(r.status==="rejected")console.warn("Pickyla loader failed:",jobs[i][0],r.reason);});
+      v18ResetAdminToTop();
     }else{adminView.classList.add("hidden");loginView.classList.remove("hidden");document.body.style.overflow="";document.documentElement.style.overflow="";}
   }catch(e){console.error("Pickyla admin refresh failed:",e);document.body.style.overflow="";document.documentElement.style.overflow="";}
 }
@@ -385,10 +386,16 @@ if($("adminMenuBtn"))$("adminMenuBtn").onclick=()=>v17eSetMenu(true);if($("admin
 // rebuilding, leaving the sticky header visible over an apparently blank page.
 if("scrollRestoration" in history)history.scrollRestoration="manual";
 function v18ResetAdminToTop(){
-  if(location.hash)return;
-  window.scrollTo(0,0);
-  requestAnimationFrame(()=>window.scrollTo(0,0));
-  setTimeout(()=>window.scrollTo(0,0),250);
+  // A stale section hash lets Android Chrome jump back into the middle of the
+  // dashboard after refresh. Clear it only during boot/recovery; normal in-page
+  // navigation still works after the page has loaded.
+  if(location.hash)history.replaceState(null,"",location.pathname+location.search);
+  const top=()=>window.scrollTo({top:0,left:0,behavior:"auto"});
+  top();
+  requestAnimationFrame(top);
+  setTimeout(top,120);
+  setTimeout(top,600);
+  setTimeout(top,1500);
 }
 function v18RecoverAdminScroll(resetPosition=false){
   const drawer=$("adminMenuDrawer");
