@@ -234,5 +234,7 @@
     if(window.__pickylaAdminActiveReady)setTimeout(loadAdminContent,1500);
     return true;
   }
-  let tries=0,t=setInterval(async()=>{tries++;if(await install()||tries>40)clearInterval(t);},250);
+  function activate(){install().catch(e=>console.error('PICKYLA Session 3 install failed:',e));}
+  window.addEventListener('pickyla:admin-active',activate,{once:true});
+  if(window.__pickylaAdminActiveReady)activate();
 })();
