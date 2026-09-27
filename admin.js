@@ -111,8 +111,31 @@ async function loadReports(){
   const rows=data||[];
   v18SetDataStatus("STAGING CONNECTED • "+rows.length+" booking record"+(rows.length===1?"":"s")+" returned • "+((Date.now()-started)/1000).toFixed(1)+"s",rows.length?"ok":"warn");
   const active=rows.filter(x=>x.status!=="cancelled"),today=new Date(),t=todayStr(),weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);const ms=new Date(today.getFullYear(),today.getMonth(),1),me=new Date(today.getFullYear(),today.getMonth()+1,0);const calc=(arr,p)=>{const gross=arr.reduce((a,x)=>a+Number(x.total_amount||0),0),paid=arr.reduce((a,x)=>a+Number(x.amount_paid||0),0);$(p+"Gross").textContent=peso(gross);$(p+"Meta").textContent=`${arr.length} session(s) • ${peso(paid)} collected`;};calc(active.filter(x=>x.session_date===t),"today");calc(active.filter(x=>x.session_date>=dateStr(weekStart)&&x.session_date<=dateStr(weekEnd)),"week");const monthRows=active.filter(x=>x.session_date>=dateStr(ms)&&x.session_date<=dateStr(me));calc(monthRows,"month");calc(active,"all");$("monthHours").textContent=monthRows.reduce((a,x)=>a+(Number(x.end_hour)-Number(x.start_hour)),0);$("cancelCount").textContent=rows.filter(x=>x.status==="cancelled").length;renderCharts(active);}
-function renderCharts(active){const labels=[],values=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=dateStr(d);labels.push(d.toLocaleDateString("en-PH",{month:"short",day:"numeric"}));values.push(active.filter(x=>x.session_date===ds).reduce((a,x)=>a+Number(x.total_amount||0),0));}const groups=[1,2,3,4,5].map(n=>active.filter(x=>Number(x.participant_count)===n).length);if(incomeChart)incomeChart.destroy();if(mixChart)mixChart.destroy();incomeChart=new Chart($("incomeChart"),{type:"bar",data:{labels,datasets:[{label:"Booked value",data:values,backgroundColor:"#f5c400",borderColor:"#111111",borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});mixChart=new Chart($("mixChart"),{type:"doughnut",data:{labels:["1 player","2 players","3 players","4 players","5 players"],datasets:[{data:groups,backgroundColor:["#111111","#f5c400","#d8a800","#9d9d9d","#e8dfbd"]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}}}});}
-
+function renderCharts(active){
+  // v19 mobile stability: Chart.js responsive canvases were causing a resize/layout
+  // loop on some Android browsers. Keep the reporting data visible without canvas
+  // observers while the admin freeze is isolated.
+  try{if(incomeChart){incomeChart.destroy();incomeChart=null;}}catch(_e){}
+  try{if(mixChart){mixChart.destroy();mixChart=null;}}catch(_e){}
+  const income=$("incomeChart"),mix=$("mixChart");
+  const incomeCard=income?.closest(".chart-card"),mixCard=mix?.closest(".chart-card");
+  if(income)income.style.display="none";
+  if(mix)mix.style.display="none";
+  const last14=[];
+  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=dateStr(d);last14.push(active.filter(x=>x.session_date===ds).reduce((a,x)=>a+Number(x.total_amount||0),0));}
+  const total14=last14.reduce((a,b)=>a+b,0);
+  const groups=[1,2,3,4,5].map(n=>active.filter(x=>Number(x.participant_count)===n).length);
+  if(incomeCard){
+    let box=incomeCard.querySelector(".v19-static-chart");
+    if(!box){box=document.createElement("div");box.className="v19-static-chart";incomeCard.appendChild(box);}
+    box.innerHTML=`<strong style="display:block;font:800 28px Manrope;margin:18px 0 6px">${peso(total14)}</strong><span style="font-size:11px;color:#666a70">Booked value across the last 14 days</span><small style="display:block;margin-top:10px;color:#8a8a84">Canvas chart temporarily disabled for mobile stability testing.</small>`;
+  }
+  if(mixCard){
+    let box=mixCard.querySelector(".v19-static-chart");
+    if(!box){box=document.createElement("div");box.className="v19-static-chart";mixCard.appendChild(box);}
+    box.innerHTML=`<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:18px">${groups.map((v,i)=>`<div style="text-align:center;background:#f7f5ee;border-radius:10px;padding:10px 4px"><strong style="display:block;font-size:18px">${v}</strong><small style="font-size:8px;color:#666a70">${i+1}P</small></div>`).join("")}</div><small style="display:block;margin-top:10px;color:#8a8a84">Canvas chart temporarily disabled for mobile stability testing.</small>`;
+  }
+}
 function initDetailedReportDates(){if(!$("reportFrom"))return;const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);$("reportFrom").value||=dateStr(start);$("reportTo").value||=todayStr();}
 if($("detailedReportType"))$("detailedReportType").onchange=()=>{$("reportStatusWrap").classList.toggle("hidden",$("detailedReportType").value==="cash");};
 function filterBookingRows(rows,filter){return rows.filter(b=>{if(filter==="cancelled")return b.status==="cancelled";if(b.status==="cancelled")return false;const s=paymentState(b).status;if(filter==="all")return true;if(filter==="full")return s==="full";if(filter==="partial")return s==="partial";if(filter==="none")return s==="none";if(filter==="outstanding")return s!=="full";return true;});}
