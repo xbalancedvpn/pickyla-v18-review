@@ -354,6 +354,7 @@ async function authRefresh(){
         ["Today",()=>loadTodayCommandCenter()],["Payments",()=>loadPaymentDashboard()],["Testimonials",()=>loadV17BTestimonials()]
       ];
       await v18RunAdminLoaders(jobs);
+      window.dispatchEvent(new CustomEvent("pickyla:admin-active"));
       v18ResetAdminToTop();
     }else{
       adminView.classList.add("hidden");loginView.classList.remove("hidden");
