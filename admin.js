@@ -100,16 +100,16 @@ $("quickBookingForm").onsubmit=async e=>{e.preventDefault();const d=$("bookingDa
 
 async function loadReports(){
   const statusEl=$("v18DataStatus");
-  if(statusEl)statusEl.textContent="Checking staging bookings…";
+  v18SetDataStatus("DATA • querying staging bookings table…","checking");
   const started=Date.now();
-  const {data,error}=await db.from("bookings").select("session_date,start_hour,end_hour,total_amount,amount_paid,status,participant_count");
+  const {data,error}=await v18AdminLoaderWithTimeout("Bookings query",()=>db.from("bookings").select("session_date,start_hour,end_hour,total_amount,amount_paid,status,participant_count"),10000);
   if(error){
-    if(statusEl){statusEl.textContent="STAGING DATA ERROR: "+(error.message||error.code||"Unknown Supabase error");statusEl.style.background="#fff0ee";statusEl.style.color="#8b2f24";}
+    v18SetDataStatus("STAGING DATA ERROR • "+(error.message||error.code||"Unknown Supabase error"),"error");
     ["todayMeta","weekMeta","monthMeta","allMeta"].forEach(id=>{const el=$(id);if(el)el.textContent="Data connection error";});
     throw error;
   }
   const rows=data||[];
-  if(statusEl){statusEl.textContent="STAGING CONNECTED • "+rows.length+" booking record"+(rows.length===1?"":"s")+" returned • "+((Date.now()-started)/1000).toFixed(1)+"s";statusEl.style.background=rows.length?"#eef8ef":"#fff7d6";statusEl.style.color=rows.length?"#286235":"#7b6500";}
+  v18SetDataStatus("STAGING CONNECTED • "+rows.length+" booking record"+(rows.length===1?"":"s")+" returned • "+((Date.now()-started)/1000).toFixed(1)+"s",rows.length?"ok":"warn");
   const active=rows.filter(x=>x.status!=="cancelled"),today=new Date(),t=todayStr(),weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);const ms=new Date(today.getFullYear(),today.getMonth(),1),me=new Date(today.getFullYear(),today.getMonth()+1,0);const calc=(arr,p)=>{const gross=arr.reduce((a,x)=>a+Number(x.total_amount||0),0),paid=arr.reduce((a,x)=>a+Number(x.amount_paid||0),0);$(p+"Gross").textContent=peso(gross);$(p+"Meta").textContent=`${arr.length} session(s) • ${peso(paid)} collected`;};calc(active.filter(x=>x.session_date===t),"today");calc(active.filter(x=>x.session_date>=dateStr(weekStart)&&x.session_date<=dateStr(weekEnd)),"week");const monthRows=active.filter(x=>x.session_date>=dateStr(ms)&&x.session_date<=dateStr(me));calc(monthRows,"month");calc(active,"all");$("monthHours").textContent=monthRows.reduce((a,x)=>a+(Number(x.end_hour)-Number(x.start_hour)),0);$("cancelCount").textContent=rows.filter(x=>x.status==="cancelled").length;renderCharts(active);}
 function renderCharts(active){const labels=[],values=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=dateStr(d);labels.push(d.toLocaleDateString("en-PH",{month:"short",day:"numeric"}));values.push(active.filter(x=>x.session_date===ds).reduce((a,x)=>a+Number(x.total_amount||0),0));}const groups=[1,2,3,4,5].map(n=>active.filter(x=>Number(x.participant_count)===n).length);if(incomeChart)incomeChart.destroy();if(mixChart)mixChart.destroy();incomeChart=new Chart($("incomeChart"),{type:"bar",data:{labels,datasets:[{label:"Booked value",data:values,backgroundColor:"#f5c400",borderColor:"#111111",borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});mixChart=new Chart($("mixChart"),{type:"doughnut",data:{labels:["1 player","2 players","3 players","4 players","5 players"],datasets:[{data:groups,backgroundColor:["#111111","#f5c400","#d8a800","#9d9d9d","#e8dfbd"]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}}}});}
 
@@ -292,6 +292,17 @@ $("quickBookingForm").onsubmit=async e=>{
 // Keep old whole-booking cancellation compatible with the new session status.
 async function v17LegacyCancelSync(){/* reserved */}
 
+function v18SetDataStatus(message,kind="checking"){
+  const el=$("v18DataStatus");if(!el)return;
+  el.textContent=message;
+  const styles={
+    checking:["#fffdf4","#6d5b17","#e6dfbd"],
+    ok:["#eef8ef","#286235","#cce7cf"],
+    warn:["#fff7d6","#7b6500","#eadb9a"],
+    error:["#fff0ee","#8b2f24","#efc3bd"]
+  }[kind]||["#fffdf4","#6d5b17","#e6dfbd"];
+  el.style.background=styles[0];el.style.color=styles[1];el.style.borderColor=styles[2];
+}
 function v18AdminLoaderWithTimeout(label,fn,ms=12000){
   return Promise.race([
     Promise.resolve().then(fn),
@@ -299,17 +310,20 @@ function v18AdminLoaderWithTimeout(label,fn,ms=12000){
   ]);
 }
 async function v18GetFreshAdminSession(){
-  const first=await db.auth.getSession();
+  v18SetDataStatus("AUTH • reading saved staging session…","checking");
+  const first=await v18AdminLoaderWithTimeout("Supabase auth session",()=>db.auth.getSession(),8000);
   if(first.error)throw first.error;
   let session=first.data?.session||null;
-  if(!session)return null;
+  if(!session){v18SetDataStatus("AUTH • no active staging session — please sign in again","warn");return null;}
   const expiresMs=Number(session.expires_at||0)*1000;
   const shouldRefresh=!expiresMs||expiresMs-Date.now()<90000;
   if(shouldRefresh){
-    const refreshed=await db.auth.refreshSession();
+    v18SetDataStatus("AUTH • refreshing staging session token…","checking");
+    const refreshed=await v18AdminLoaderWithTimeout("Supabase token refresh",()=>db.auth.refreshSession(),8000);
     if(!refreshed.error&&refreshed.data?.session)session=refreshed.data.session;
     else if(expiresMs&&expiresMs<=Date.now())throw(refreshed.error||new Error("Admin session expired"));
   }
+  v18SetDataStatus("AUTH OK • querying staging bookings…","checking");
   return session;
 }
 async function v18RunAdminLoaders(jobs){
@@ -347,10 +361,10 @@ async function authRefresh(){
     }
   }catch(e){
     console.error("Pickyla admin refresh failed:",e);
+    v18SetDataStatus("ADMIN DATA BOOT ERROR • "+(e?.message||String(e)),"error");
     document.body.style.overflow="";document.documentElement.style.overflow="";
     if(adminView&&!adminView.classList.contains("hidden")){
-      ["todayMeta","weekMeta","monthMeta","allMeta"].forEach(id=>{const el=$(id);if(el)el.textContent="Reconnecting to live data…";});
-      setTimeout(()=>authRefresh(),1800);
+      ["todayMeta","weekMeta","monthMeta","allMeta"].forEach(id=>{const el=$(id);if(el)el.textContent="Data boot error";});
     }
   }finally{
     window.__pickylaAdminBootRunning=false;
