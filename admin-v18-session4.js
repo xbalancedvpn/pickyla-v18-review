@@ -107,16 +107,23 @@
       if(!court)return alert('Select a court. If you choose Others, enter the court name.');
       const save=q('v18s4CourtSave');save.disabled=true;save.textContent='Saving…';
       try{
-        const {error}=await db.from('bookings').update({court_name:court}).eq('id',courtContext.id);
-        if(error)return alert(error.message);
-        const row=state.rows.find(x=>String(x.id)===String(courtContext.id));if(row){row.court_name=court;row._display_court=court;}
-        courtContext.court_name=court;courtContext._display_court=court;dialog.close();toast('Court updated');
-        renderAll();
+        const expected=String(court).trim();
+        const {data:saved,error}=await db.from('bookings').update({court_name:expected}).eq('id',courtContext.id).select('id,court_name').maybeSingle();
+        if(error)throw error;
+        const confirmed=String(saved?.court_name||'').trim();
+        if(!saved||courtPlaceholder(confirmed)||confirmed.toLowerCase()!==expected.toLowerCase())throw new Error('The booking did not return the court value after saving.');
+        const row=state.rows.find(x=>String(x.id)===String(courtContext.id));if(row){row.court_name=confirmed;row._display_court=confirmed;}
+        courtContext.court_name=confirmed;courtContext._display_court=confirmed;
+        renderAll();dialog.close();toast(`Court saved: ${confirmed}`);
         const jobs=[];
         if(typeof loadDay==='function')jobs.push(loadDay());
         if(typeof loadTodayCommandCenter==='function')jobs.push(loadTodayCommandCenter());
         if(typeof loadV17Clients==='function')jobs.push(loadV17Clients());
         await Promise.allSettled(jobs);
+        scheduleLoad(100);
+      }catch(err){
+        console.error('Court save failed',err);
+        alert('Court was not saved.\n\n'+(err?.message||err));
       }finally{courtContext=null;save.disabled=false;save.textContent='Save Court';}
     };
   }
@@ -146,7 +153,13 @@
       if(error){['v18s4UpcomingList','v18s4PastList','v18s4PaymentList','v18s4CompletedList'].forEach(id=>{if(q(id))q(id).innerHTML=`<div class="empty">${esc(error.message)}</div>`;});return;}
       state.inquiryCourts=new Map();state.inquiryCourtsByTime=new Map();
       if(!inqError)(inq||[]).forEach(i=>{const court=inquiryCourtValue(i);if(!court)return;const exact=courtKey(i.preferred_date,i.start_hour,i.end_hour,i.client_name),time=courtTimeKey(i.preferred_date,i.start_hour,i.end_hour);if(!state.inquiryCourts.has(exact))state.inquiryCourts.set(exact,court);const list=state.inquiryCourtsByTime.get(time)||[];if(!list.includes(court))list.push(court);state.inquiryCourtsByTime.set(time,list);});
-      state.rows=(data||[]).map(b=>({...b,_display_court:effectiveCourt(b)}));state.paid=new Map();const ids=state.rows.map(x=>x.id);
+      const sourceRows=(data||[]).map(b=>({...b}));
+      const repairs=[];
+      sourceRows.forEach(b=>{if(!courtPlaceholder(b.court_name))return;const recovered=effectiveCourt(b);if(recovered){b.court_name=recovered;b._display_court=recovered;repairs.push({id:b.id,court:recovered});}});
+      if(repairs.length){
+        await Promise.allSettled(repairs.slice(0,80).map(x=>db.from('bookings').update({court_name:x.court}).eq('id',x.id).select('id').maybeSingle()));
+      }
+      state.rows=sourceRows.map(b=>({...b,_display_court:effectiveCourt(b)}));state.paid=new Map();const ids=state.rows.map(x=>x.id);
       if(ids.length){const {data:p,error:pe}=await db.from('booking_payments').select('booking_id,amount').in('booking_id',ids);if(!pe)(p||[]).forEach(x=>state.paid.set(x.booking_id,(state.paid.get(x.booking_id)||0)+Number(x.amount||0)));else state.rows.forEach(b=>state.paid.set(b.id,Number(b.amount_paid||0)));}
       renderAll();
     })();
